@@ -60,6 +60,7 @@ public class Client {
         serverOutput.println("/USERNAME:"+username+":"+name+":"+pass);
     }
     public static void sendUsernameToServer(String username ,String pass) {
+        System.out.println("/LOGIN:"+username+":"+pass);
         serverOutput.println("/LOGIN:"+username+":"+pass);
     }
     public static synchronized LinkedList<String> parseList(String usernames) {
@@ -73,5 +74,14 @@ public class Client {
         }
         return list;
     }
+
+    public static void sendCreateTeamRequest(String teamName) {
+        serverOutput.println("/CREATE_TEAM:"+teamName);
+
+    }
+
+    public static void sendJoinTeamRequest(String teamName) {
+    }
+
 
 }

@@ -1,6 +1,7 @@
 package server;
 
 import server.model.Model;
+import server.model.Team;
 import server.model.User;
 
 import java.io.BufferedReader;
@@ -8,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+
 
 public class ClientThread extends Thread {
     Socket communicationSocket = null;
@@ -76,23 +78,18 @@ public class ClientThread extends Thread {
                 if (input.startsWith("/LOGIN")) {
                     String username = input.split(":")[1];
                     String pass = input.split(":")[2];
-
-
-//                    String response = checkUsername(name);
-//                    clientOutput.println("/USERNAME:" + response);
-//                    if (response.equals("OK")) {
-//                        this.username = username;
-//                        User user = new User(username,name,pass);
-//                        Model.saveUser(user);
-//                        Server.onlineUsers.add(this);
-////                        broadcastOnlineList(createOnlineList());
-////                        broadcastActiveGames(createActiveList());
-//                        System.out.println(name + " has joined.");
-//                    }
                     String response = login(username, pass);
                     clientOutput.println("/LOGIN:" + response);
                     if (response.equals("OK")) {
                         System.out.println(username + " has joined.");
+                    }
+                }
+                if (input.startsWith("/CREATE_TEAM")) {
+                    String teamName = input.split(":")[1];
+                    String response = createTeam(teamName);
+                    clientOutput.println("/CREATE_TEAM:" + response);
+                    if (response.equals("OK")) {
+                        System.out.println(teamName + " has been created.");
                     }
                 }
 
@@ -195,7 +192,9 @@ public class ClientThread extends Thread {
         else return "NOT_OK";
     }
     private String login (String username ,String pass) throws IOException {
+        System.out.println("from login" + username + " " + pass);
         User u = Model.loadUserFromFile(username);
+        System.out.println("from login" + u.getUsername() + " " + u.getPassword());
         if (Model.loadUserFromFile(username)!=null) {
             if (u.getPassword().equals(pass)) {
                 this.username = username;
@@ -240,5 +239,11 @@ public class ClientThread extends Thread {
             usernames+=s+";";
         }
         return usernames;
+    }
+    private String createTeam(String teamName) throws IOException {
+        Team team = new Team(teamName);
+        Model.saveTeam(team);
+        return "OK";
+
     }
 }

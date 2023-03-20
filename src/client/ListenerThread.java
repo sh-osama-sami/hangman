@@ -21,17 +21,26 @@ public class ListenerThread extends Thread{
 
             try {
                 String input = serverInput.readLine();
+                System.out.println("Server: " + input);
 
                 if(input.startsWith("/USERNAME")) {
                     response = input.split(":")[1];
                     UIController.validateUsernameFromServer(response);
                 } else if (input.startsWith("/LOGIN")) {
                     response = input.split(":")[1];
-                    UIController.validateLoginfromServer(response);
+                    UIController.validateLoginFromServer(response);
                 } else if(input.startsWith("/LIST")) {
                     String usernames = input.substring(6);
                     Client.onlineLista = Client.parseList(usernames);
 //                    UIController.updateTable();
+                }
+                else if (input.startsWith("/CREATE_TEAM")) {
+                    response = input.split(":")[1];
+                    System.out.println("Server: team creation " + response);
+                    UIController.handleCreateTeamResponse(response);
+                } else if (input.startsWith("/JOIN_TEAM")) {
+                    response = input.split(":")[1];
+                    UIController.handleJoinTeamResponse(response);
                 }
 //                else if(input.startsWith("/INVITEDBY")) {
 //                    String name = input.split(":")[1];

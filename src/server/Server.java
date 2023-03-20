@@ -1,13 +1,17 @@
 package server;
 
+import server.model.Team;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Server {
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
     public static LinkedList<String> activeGames = new LinkedList<String>();
+    public static ArrayList<Team> teams;
 
     public static void main(String[] args) {
 
@@ -21,6 +25,8 @@ public class Server {
             //Listening for incoming connections
             while(true) {
                 System.out.println("Waiting for a connection...");
+                System.out.println("Server is listening on port " + portNumber);
+
 
                 //Accepting connection
                 clientSocket = server.accept();
@@ -29,6 +35,7 @@ public class Server {
                 //Creating a thread for the new client
                 ClientThread newClient = new ClientThread(clientSocket);
                 newClient.start();
+                System.out.println("Client thread started" + newClient.getName());
             }
 
         } catch (IOException e) {

@@ -6,6 +6,7 @@ import java.util.List;
 
 public class Model {
     private static final String FILENAME = "users.txt";
+    private static final String TEAMS = "teams.txt";
 
     public static void saveUser(User user) {
         try {
@@ -44,16 +45,22 @@ public class Model {
     }
     public static User loadUserFromFile(String username) throws IOException {
         String fileName = "users.txt";
+        System.out.println("fileName: " + fileName  + " username: " + username
+        );
         File file = new File(fileName);
+        System.out.println("file: " + file);
 
         if (!file.exists()) {
             file.createNewFile();
         }
 
         BufferedReader reader = new BufferedReader(new FileReader(file));
+        System.out.println("reader: " + reader  );
         String line;
 
+
         while ((line = reader.readLine()) != null) {
+            System.out.println("line: " + line);
             String[] userData = line.split(",");
             if (userData[2].equals(username)) {
                 int id = Integer.parseInt(userData[0]);
@@ -61,10 +68,26 @@ public class Model {
                 reader.close();
                 return user;
             }
-            else return null;
+
         }
 
         reader.close();
         return null;
+    }
+
+    public static void saveTeam(Team team) throws IOException {
+        File file = new File(TEAMS);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(TEAMS, true));
+            writer.write(team.getId() + "," + team.getName() +  "," + team.getScore() + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
