@@ -6,11 +6,13 @@ import java.util.Scanner;
 
 public class UIController extends Thread {
     static String usernameToValidate = "";
+    public static boolean giving = true;
 
     public void run() {
         Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("1. Login 2. Signup");
+            System.out.println("1. Login 2. Signup ");
+
             String choice = sc.nextLine();
             if (choice.equals("1")) {
                 login(sc);
@@ -18,6 +20,8 @@ public class UIController extends Thread {
             } else if (choice.equals("2")) {
                 signup(sc);
                 break;
+            } else if (choice.equals("-")) {
+                Client.sendExitSignal();
             } else {
                 System.out.println("Invalid choice. Please enter 1 or 2.");
                 break;
@@ -44,6 +48,82 @@ public class UIController extends Thread {
         if (validateUsernameLocally(username)) {
             Client.sendUsernameNameToServer(username, name, password);
         }
+    }
+    private static void showGameOptions() {
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            System.out.println("Choose game mode:");
+            System.out.println("1. Single Player");
+            System.out.println("2. Multiplayer");
+            String choice = sc.nextLine();
+
+            if (choice.equals("1")) {
+                // Single Player logic
+                break;
+            } else if (choice.equals("2")) {
+                showMultiplayerOptions(sc);
+                break;
+            }else if (choice.equals("-")) {
+                Client.sendExitSignal();
+            }
+            else {
+                System.out.println("Invalid choice. Please enter 1 or 2.");
+            }
+        }
+    }
+    private static void singlePlayer(Scanner sc) {
+        while (true) {
+            System.out.println("Choose action:");
+            System.out.println("1. Create Team");
+            System.out.println("2. Join Team");
+            String choice = sc.nextLine();
+
+            if (choice.equals("1")) {
+                createTeam(sc);
+                break;
+            } else if (choice.equals("2")) {
+                joinTeam(sc);
+                break;
+            }else if (choice.equals("-")) {
+                Client.sendExitSignal();
+            }
+            else {
+                System.out.println("Invalid choice. Please enter1 or 2.");
+            }
+        }
+    }
+    private static void showMultiplayerOptions(Scanner sc) {
+        while (true) {
+            System.out.println("Choose action:");
+            System.out.println("1. Create Team");
+            System.out.println("2. Join Team");
+            String choice = sc.nextLine();
+
+            if (choice.equals("1")) {
+                createTeam(sc);
+                break;
+            } else if (choice.equals("2")) {
+                joinTeam(sc);
+                break;
+            }else if (choice.equals("-")) {
+                Client.sendExitSignal();
+            }
+            else {
+                System.out.println("Invalid choice. Please enter1 or 2.");
+            }
+        }
+    }
+
+    private static void createTeam(Scanner sc) {
+        System.out.println("Enter team name:");
+        String teamName = sc.nextLine();
+        Client.sendCreateTeamRequest(teamName);
+    }
+
+    private static void joinTeam(Scanner sc) {
+        System.out.println("Enter the team name you want to join:");
+        String teamName = sc.nextLine();
+        Client.sendJoinTeamRequest(teamName);
     }
 
     public static boolean validateUsernameLocally(String username) {
@@ -92,56 +172,6 @@ public class UIController extends Thread {
         }
     }
 
-    private static void showGameOptions() {
-        Scanner sc = new Scanner(System.in);
-        while (true) {
-            System.out.println("Choose game mode:");
-            System.out.println("1. Single Player");
-            System.out.println("2. Multiplayer");
-            String choice = sc.nextLine();
-
-            if (choice.equals("1")) {
-                // Single Player logic
-                break;
-            } else if (choice.equals("2")) {
-                showMultiplayerOptions(sc);
-                break;
-            } else {
-                System.out.println("Invalid choice. Please enter 1 or 2.");
-            }
-        }
-    }
-
-    private static void showMultiplayerOptions(Scanner sc) {
-        while (true) {
-            System.out.println("Choose action:");
-            System.out.println("1. Create Team");
-            System.out.println("2. Join Team");
-            String choice = sc.nextLine();
-
-            if (choice.equals("1")) {
-                createTeam(sc);
-                break;
-            } else if (choice.equals("2")) {
-                joinTeam(sc);
-                break;
-            } else {
-                System.out.println("Invalid choice. Please enter1 or 2.");
-            }
-        }
-    }
-
-    private static void createTeam(Scanner sc) {
-        System.out.println("Enter team name:");
-        String teamName = sc.nextLine();
-        Client.sendCreateTeamRequest(teamName);
-    }
-
-    private static void joinTeam(Scanner sc) {
-        System.out.println("Enter the team name you want to join:");
-        String teamName = sc.nextLine();
-        Client.sendJoinTeamRequest(teamName);
-    }
 
     public static void handleCreateTeamResponse(String msg) {
         if (msg.equals("OK")) {
@@ -164,7 +194,18 @@ public class UIController extends Thread {
             System.out.println("Error joining the team. Please try again.");
         }
     }
+
+    //Recieve the message when your opponent has left the game
+    public static void receiveQuitTheGameSignal(String name) {
+
+//        if(dialogForWord!=null)
+//            dialogForWord.setVisible(false);
+        giving = false;
+
+        System.out.println("player " + name + " has quit the game");
+
+
+    }
+
+
 }
-
-
-

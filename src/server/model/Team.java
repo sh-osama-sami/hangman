@@ -1,6 +1,9 @@
 package server.model;
 
+import java.util.ArrayList;
+
 public class Team {
+    User [] palyers;
     private String name;
     private static int  id = 0;
     private int score;
@@ -9,6 +12,7 @@ public class Team {
     private int draws;
 
     public Team(String name) {
+        palyers=new User[Game.maxNumberOfPlayersInTeam];
         this.name = name;
         Team.id = id+1;
         this.score = 0;
@@ -64,5 +68,14 @@ public class Team {
 
     public void setDraws(int draws) {
         this.draws = draws;
+    }
+
+    public void addPlayer(User user){
+        for (int i = 0; i < palyers.length; i++) {
+            if(palyers[i]==null){
+                palyers[i]=user;
+                break;
+            }
+        }
     }
 }

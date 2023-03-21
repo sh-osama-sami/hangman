@@ -5,12 +5,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Model {
-    private static final String FILENAME = "users.txt";
+    private static final String USERS = "users.txt";
     private static final String TEAMS = "teams.txt";
+
+    private static final String SCORE = "score.txt";
+    private static final String GAMECONFIG = "gameconfig.txt";
+    private static final String PHRASES = "lookup.txt";
+
+
 
     public static void saveUser(User user) {
         try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(FILENAME, true));
+            BufferedWriter writer = new BufferedWriter(new FileWriter(USERS, true));
             writer.write(user.getId() + "," + user.getName() + "," + user.getUsername() + "," + user.getPassword() + "\n");
             writer.close();
         } catch (IOException e) {
@@ -22,7 +28,7 @@ public class Model {
         List<User> users = new ArrayList<>();
 
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(FILENAME));
+            BufferedReader reader = new BufferedReader(new FileReader(USERS));
             String line;
 
             while ((line = reader.readLine()) != null) {
@@ -44,10 +50,10 @@ public class Model {
         return users;
     }
     public static User loadUserFromFile(String username) throws IOException {
-        String fileName = "users.txt";
-        System.out.println("fileName: " + fileName  + " username: " + username
+
+        System.out.println("fileName: " + USERS  + " username: " + username
         );
-        File file = new File(fileName);
+        File file = new File(USERS);
         System.out.println("file: " + file);
 
         if (!file.exists()) {
@@ -89,5 +95,97 @@ public class Model {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public static void saveScore(Score score) throws IOException {
+        File file = new File(SCORE);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(SCORE, true));
+            writer.write( score.getUsername() +  "," + score.singleGameScore +"," + score.multiGameScore +"," + score.totalScore  + "\n");
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    public static Score loadUserScoreFromFile(String username) throws IOException {
+
+        System.out.println("fileName: " + SCORE  + " username: " + username
+        );
+        File file = new File(SCORE);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        System.out.println("reader: " + reader  );
+        String line;
+
+
+        while ((line = reader.readLine()) != null) {
+            System.out.println("line: " + line);
+            String[] socreData = line.split(",");
+            if (socreData[0].equals(username)) {
+               Score score = new Score(socreData[0],Integer.parseInt(socreData[1]),Integer.parseInt(socreData[2]),Integer.parseInt(socreData[3]));
+                reader.close();
+                return score;
+            }
+
+        }
+
+        reader.close();
+        return null;
+    }
+    public static Game loadGameConfigFromFile() throws IOException {
+
+        File file = new File(GAMECONFIG);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        System.out.println("reader: " + reader  );
+        String line;
+
+
+        while ((line = reader.readLine()) != null) {
+            System.out.println("line: " + line);
+            String[] gameData = line.split(",");
+
+
+               Game game = new Game( Integer.parseInt(gameData[0]), Integer.parseInt(gameData[1]), Integer.parseInt(gameData[2]));
+                reader.close();
+                return game;
+
+
+        }
+
+        reader.close();
+        return null;
+    }
+    public ArrayList<String> loadLookUpFile(){
+        ArrayList<String> phrases = new ArrayList<>();
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(PHRASES));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                phrases.add(line);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return phrases;
     }
 }

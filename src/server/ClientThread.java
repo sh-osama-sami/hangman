@@ -38,19 +38,28 @@ public class ClientThread extends Thread {
             while (true) {
                 String input = clientInput.readLine();
 
-//                //Exiting app signal received
-//                if(input.equals("/EXIT")) {
-//                    if(!Server.onlineUsers.isEmpty()) {
-//                        Server.onlineUsers.remove(this);
-//                        broadcastOnlineList(createOnlineList());
-//                        Server.activeGames.remove(this.username);
-//                        broadcastActiveGames(createActiveList());
-//                        System.out.println(username+" exited.");
-//                    } else
-//                        System.out.println("Client disconnected.");
-//                    communicationSocket.close();
-//                    return;
-//                }
+                //Exiting app signal received
+                if(input.equals("/EXIT")) {
+                    if(!Server.onlineUsers.isEmpty()) {
+                        Server.onlineUsers.remove(this);
+                        broadcastOnlineList(createOnlineList());
+                        Server.activeGames.remove(this.username);
+                        broadcastActiveGames(createActiveList());
+                        System.out.println(username+" exited.");
+                    } else
+                        System.out.println("Client disconnected.");
+                    communicationSocket.close();
+                    return;
+                }
+                //Forwarding quit signal to another player
+                else if(input.startsWith("/QUIT")){
+                    String name=input.split(":")[1];
+                    forwardQuitSignal(name);
+                    Server.activeGames.remove(name);
+                    Server.activeGames.remove(this.username);
+                    broadcastActiveGames(createActiveList());
+                    //System.out.println("broadcast");
+                }
 
                 //Username validation
                 if (input.startsWith("/USERNAME")) {
@@ -245,5 +254,13 @@ public class ClientThread extends Thread {
         Model.saveTeam(team);
         return "OK";
 
+    }
+    private void forwardQuitSignal(String name) {
+        for(ClientThread t : Server.onlineUsers) {
+            if(t.username.equals(name)) {
+                t.clientOutput.println("/QUIT_SENT:"+this.username);
+                return;
+            }
+        }
     }
 }

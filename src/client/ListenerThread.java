@@ -103,10 +103,10 @@ public class ListenerThread extends Thread{
 //                    String message = input.split(":")[2];
 //                    GUIControler.addMessage(name, message);
 //                }
-//                else if(input.startsWith("/QUIT_SENT")){
-//                    String name=input.split(":")[1];
-//                    GUIControler.receiveQuitTheGameSignal(name);
-//                }
+                else if(input.startsWith("/QUIT_SENT")){
+                    String name=input.split(":")[1];
+                    UIController.receiveQuitTheGameSignal(name);
+                }
                 else
                     continue;
 

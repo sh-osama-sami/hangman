@@ -82,6 +82,12 @@ public class Client {
 
     public static void sendJoinTeamRequest(String teamName) {
     }
-
-
+    public static void sendExitSignal() {
+        System.exit(0);
+        serverOutput.println("/EXIT");
+    }
+    public static void sendQuitTheGameSignal(String opponent){
+        System.exit(0);
+        serverOutput.println("/QUIT:"+opponent);
+    }
 }
