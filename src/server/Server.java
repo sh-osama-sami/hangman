@@ -1,5 +1,6 @@
 package server;
 
+import server.model.Model;
 import server.model.Team;
 
 import java.io.IOException;
@@ -10,7 +11,7 @@ import java.util.LinkedList;
 
 public class Server {
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
-    public static LinkedList<String> activeGames = new LinkedList<String>();
+    public static LinkedList<Integer> activeGames = new LinkedList<Integer>();
     public static ArrayList<Team> teams;
 
     public static void main(String[] args) {
@@ -27,7 +28,9 @@ public class Server {
                 System.out.println("Waiting for a connection...");
                 System.out.println("Server is listening on port " + portNumber);
 
-
+                Model model = new Model();
+                System.out.println(model.loadLookUpFile());
+                System.out.println("Lookup file loaded" );
                 //Accepting connection
                 clientSocket = server.accept();
                 System.out.println("A connection has been made!");

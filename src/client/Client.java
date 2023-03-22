@@ -90,4 +90,13 @@ public class Client {
         System.exit(0);
         serverOutput.println("/QUIT:"+opponent);
     }
+
+    public static void sendStartSinglePlayerGameRequest() {
+        System.out.println("from client");
+        serverOutput.println("/START_SINGLE_PLAYER_GAME" );
+    }
+
+    public static void sendGuessToServer(String guess) {
+        serverOutput.println("/GUESS"+ ":" + guess);
+    }
 }

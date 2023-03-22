@@ -8,6 +8,56 @@ public class UIController extends Thread {
     static String usernameToValidate = "";
     public static boolean giving = true;
 
+
+    public static void handleStartSinglePlayerGameResponse(String response) {
+        if (response.equals("OK")) {
+            System.out.println("Starting single player game...");
+            guessCharacterMenu();
+
+        } else {
+            System.out.println("Failed to start single player game.");
+        }
+    }
+
+    private static void guessCharacterMenu() {
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            System.out.println("Guess a character: ");
+            String guess = sc.nextLine();
+            if (guess.length() == 1) {
+                char guessedChar = guess.charAt(0);
+                Client.sendGuessToServer(String.valueOf(guessedChar));
+                break;
+            } else {
+                System.out.println("Invalid guess. Please enter a single character.");
+            }
+        }
+    }
+
+    public static void handleGuessResponse(String response, String maskedWord , int numberOfGuesses) {
+        if (response.equals("CORRECT")) {
+            System.out.println("Correct guess!");
+            System.out.println("Masked word: " + maskedWord);
+            if (maskedWord.contains("_")) {
+                guessCharacterMenu();
+            } else {
+                System.out.println("You won!");
+                showGameOptions();
+            }
+        }
+         else if (response.equals("WRONG")) {
+            System.out.println("Wrong guess!");
+            System.out.println("Masked word: " + maskedWord);
+            if (numberOfGuesses > 0) {
+                guessCharacterMenu();
+            } else {
+                System.out.println("You lost!");
+                showGameOptions();
+            }
+
+    }
+    }
+
     public void run() {
         Scanner sc = new Scanner(System.in);
         while (true) {
@@ -22,10 +72,16 @@ public class UIController extends Thread {
                 break;
             } else if (choice.equals("-")) {
                 Client.sendExitSignal();
-            } else {
+            }
+            else if (choice.equals("3")) {
+                showGameOptions();
+                break;
+            }
+            else {
                 System.out.println("Invalid choice. Please enter 1 or 2.");
                 break;
             }
+
         }
     }
 
@@ -58,7 +114,7 @@ public class UIController extends Thread {
             String choice = sc.nextLine();
 
             if (choice.equals("1")) {
-                // Single Player logic
+                startSinglePlayerGame();
                 break;
             } else if (choice.equals("2")) {
                 showMultiplayerOptions(sc);
@@ -205,6 +261,16 @@ public class UIController extends Thread {
         System.out.println("player " + name + " has quit the game");
 
 
+    }
+
+    public static void startSinglePlayerGame() {
+
+        Client.sendStartSinglePlayerGameRequest();
+
+        // Update the UI with the initial game state
+    }
+
+    private static void updateSinglePlayerUI() {
     }
 
 

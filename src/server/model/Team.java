@@ -3,7 +3,7 @@ package server.model;
 import java.util.ArrayList;
 
 public class Team {
-    User [] palyers;
+    User [] players;
     private String name;
     private static int  id = 0;
     private int score;
@@ -12,7 +12,7 @@ public class Team {
     private int draws;
 
     public Team(String name) {
-        palyers=new User[Game.maxNumberOfPlayersInTeam];
+//        players=new User[Game.maxNumberOfPlayersInTeam];
         this.name = name;
         Team.id = id+1;
         this.score = 0;
@@ -71,11 +71,32 @@ public class Team {
     }
 
     public void addPlayer(User user){
-        for (int i = 0; i < palyers.length; i++) {
-            if(palyers[i]==null){
-                palyers[i]=user;
+        for (int i = 0; i < players.length; i++) {
+            if(players[i]==null){
+                players[i]=user;
                 break;
             }
         }
+    }
+    public void removePlayer(User user){
+        for (int i = 0; i < players.length; i++) {
+            if(players[i].getId()==user.getId()){
+                players[i]=null;
+                break;
+            }
+        }
+    }
+    public User[] getPlayers() {
+        return players;
+    }
+
+    public int getNumberOfPlayers(){
+        int count=0;
+        for (int i = 0; i < players.length; i++) {
+            if(players[i]!=null){
+                count++;
+            }
+        }
+        return count;
     }
 }

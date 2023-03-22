@@ -42,6 +42,18 @@ public class ListenerThread extends Thread{
                     response = input.split(":")[1];
                     UIController.handleJoinTeamResponse(response);
                 }
+                else if(input.startsWith("/START_SINGLE_PLAYER_GAME:")){
+                    response = input.split(":")[1];
+                    UIController.handleStartSinglePlayerGameResponse(response);
+                } else if (input.startsWith("/GUESS:")) {
+                    response = input.split(":")[1];
+                    String maskedWord = input.split(":")[2];
+                    int noOfGuesses = Integer.parseInt(input.split(":")[3]);
+                    System.out.println("Server: guess " + response);
+                    UIController.handleGuessResponse(response,maskedWord, noOfGuesses);
+
+                }
+
 //                else if(input.startsWith("/INVITEDBY")) {
 //                    String name = input.split(":")[1];
 //                    GUIControler.receiveInvite(name);

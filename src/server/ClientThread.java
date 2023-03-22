@@ -1,6 +1,7 @@
 package server;
 
 import server.model.Model;
+import server.model.SinglePlayerGame;
 import server.model.Team;
 import server.model.User;
 
@@ -9,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 
 public class ClientThread extends Thread {
@@ -22,6 +24,7 @@ public class ClientThread extends Thread {
     //Setting up streams for communication
     BufferedReader clientInput = null;
     PrintStream clientOutput = null;
+    SinglePlayerGame game = null;
 
     //Client username
     String username = "";
@@ -85,6 +88,7 @@ public class ClientThread extends Thread {
                     }
                 }
                 if (input.startsWith("/LOGIN")) {
+                    System.out.println("login from server");
                     String username = input.split(":")[1];
                     String pass = input.split(":")[2];
                     String response = login(username, pass);
@@ -100,6 +104,27 @@ public class ClientThread extends Thread {
                     if (response.equals("OK")) {
                         System.out.println(teamName + " has been created.");
                     }
+                }
+                if (input.startsWith("/START_SINGLE_PLAYER_GAME")) {
+                    System.out.println("start single player game from server");
+                    String response = startSinglePlayerGame();
+                    System.out.println("response from start single player game: " + response);
+                    clientOutput.println("/START_SINGLE_PLAYER_GAME:" + response);
+                    if (response.equals("OK")) {
+                        System.out.println( "A single player game.");
+                    }
+                }
+                if (input.startsWith("/GUESS")){
+                    String guess = input.split(":")[1];
+                    String response = guess(guess);
+                    clientOutput.println("/GUESS:" + response);
+                    if (response.equals("CORRECT")) {
+                        System.out.println(guess + " has been guessed.");
+                    } else if ( response.equals("WRONG")) {
+                        System.out.println(guess + " has been guessed.");
+                    }
+
+
                 }
 
 //                //This user is inviting someone to play
@@ -189,6 +214,22 @@ public class ClientThread extends Thread {
         }
 
     }
+
+    private String guess(String guess) {
+        char c = guess.charAt(0);
+        return game.guessCharacter(c) + ":" + game.getMaskedPhrase() + ":" + game.getRemainingAttempts();
+
+    }
+
+    private String startSinglePlayerGame() {
+        ArrayList<String> words = Model.loadLookUpFile();
+
+        game = new SinglePlayerGame(words.get(0),3);
+        Server.activeGames.push(game.id);
+        return "OK";
+
+    };
+
     private String signup (String name ,String username ,String pass) throws IOException {
 
         if (Model.loadUserFromFile(username)==null) {
@@ -244,7 +285,7 @@ public class ClientThread extends Thread {
             usernames+="/EMPTY";
             return usernames;
         }
-        for(String s : Server.activeGames) {
+        for(Integer s : Server.activeGames) {
             usernames+=s+";";
         }
         return usernames;

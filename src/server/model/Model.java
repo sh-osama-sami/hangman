@@ -170,7 +170,7 @@ public class Model {
         reader.close();
         return null;
     }
-    public ArrayList<String> loadLookUpFile(){
+    public static ArrayList<String> loadLookUpFile(){
         ArrayList<String> phrases = new ArrayList<>();
 
         try {
@@ -182,6 +182,7 @@ public class Model {
             }
 
             reader.close();
+            return phrases;
         } catch (IOException e) {
             e.printStackTrace();
         }
