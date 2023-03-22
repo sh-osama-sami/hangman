@@ -81,6 +81,7 @@ public class Client {
     }
 
     public static void sendJoinTeamRequest(String teamName) {
+        serverOutput.println("/JOIN_TEAM:"+teamName + ":" + getUsername());
     }
     public static void sendExitSignal() {
         System.exit(0);

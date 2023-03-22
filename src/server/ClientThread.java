@@ -12,6 +12,9 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import static server.Server.onlineUsers;
+import static server.Server.teams;
+
 
 public class ClientThread extends Thread {
     Socket communicationSocket = null;
@@ -105,6 +108,16 @@ public class ClientThread extends Thread {
                         System.out.println(teamName + " has been created.");
                     }
                 }
+                if (input.startsWith("/JOIN_TEAM")) {
+                    System.out.println(input);
+                    String teamName = input.split(":")[1];
+                    String userName = input.split(":")[2];
+                    String response = joinTeam(teamName,userName);
+                    clientOutput.println("/JOIN_TEAM:" + response);
+                    if (response.equals("OK")) {
+                        System.out.println(userName + " has joined " + teamName + ".");
+                    }
+                }
                 if (input.startsWith("/START_SINGLE_PLAYER_GAME")) {
                     System.out.println("start single player game from server");
                     String response = startSinglePlayerGame();
@@ -123,9 +136,8 @@ public class ClientThread extends Thread {
                     } else if ( response.equals("WRONG")) {
                         System.out.println(guess + " has been guessed.");
                     }
-
-
                 }
+
 
 //                //This user is inviting someone to play
 //                else if (input.startsWith("/INVITE")) {
@@ -214,6 +226,31 @@ public class ClientThread extends Thread {
         }
 
     }
+    private String createTeam(String teamName) throws IOException {
+        try {
+            Team team = new Team(teamName);
+            System.out.println("team created from Client thread: " + teamName);
+            teams.add(team);
+            return "OK";
+        }
+        catch (Exception e) {
+            System.out.println("team not created from Client thread: " + teamName);
+        }
+        return "NOT_OK";
+
+    }
+
+    private String joinTeam(String teamName , String userName) throws IOException {
+        for (Team team : teams) {
+            System.out.println("player username: " + userName);
+            if (team.getName().equals(teamName)) {
+                User u = Model.loadUserFromFile(userName);
+                team.addPlayer(u);
+                return "OK";
+            }
+        }
+           return "NOT_OK";
+    }
 
     private String guess(String guess) {
         char c = guess.charAt(0);
@@ -244,7 +281,7 @@ public class ClientThread extends Thread {
     private String login (String username ,String pass) throws IOException {
         System.out.println("from login" + username + " " + pass);
         User u = Model.loadUserFromFile(username);
-        System.out.println("from login" + u.getUsername() + " " + u.getPassword());
+//        System.out.println("from login" + u.getUsername() + " " + u.getPassword());
         if (Model.loadUserFromFile(username)!=null) {
             if (u.getPassword().equals(pass)) {
                 this.username = username;
@@ -290,12 +327,7 @@ public class ClientThread extends Thread {
         }
         return usernames;
     }
-    private String createTeam(String teamName) throws IOException {
-        Team team = new Team(teamName);
-        Model.saveTeam(team);
-        return "OK";
 
-    }
     private void forwardQuitSignal(String name) {
         for(ClientThread t : Server.onlineUsers) {
             if(t.username.equals(name)) {

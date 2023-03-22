@@ -81,21 +81,48 @@ public class Model {
         return null;
     }
 
-    public static void saveTeam(Team team) throws IOException {
-        File file = new File(TEAMS);
-        System.out.println("file: " + file);
+//    public static void saveTeam(Team team) throws IOException {
+//        File file = new File(TEAMS);
+//        System.out.println("file: " + file);
+//
+//        if (!file.exists()) {
+//            file.createNewFile();
+//        }
+//        try {
+//            BufferedWriter writer = new BufferedWriter(new FileWriter(TEAMS, true));
+//            writer.write(team.getId() + "," + team.getName() +  "," + team.getScore() + "," + team.);
+//            writer.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
+//    public static Team loadTeamFromFile(String teamName) throws IOException {
+//
+//        System.out.println("fileName: " + TEAMS + " teamName: " + teamName
+//        );
+//        File file = new File(TEAMS);
+//        System.out.println("file: " + file);
+//
+//
+//
+//        BufferedReader reader = new BufferedReader(new FileReader(file));
+//        System.out.println("reader: " + reader);
+//        String line;
+//
+//        while ((line = reader.readLine()) != null) {
+//            System.out.println("line: " + line);
+//            String[] teamData = line.split(",");
+//            if (teamData[1].equals(teamName)) {
+//                int id = Integer.parseInt(teamData[0]);
+//                Team team = new Team(id, teamData[1], Integer.parseInt(teamData[2]));
+//                reader.close();
+//                return team;
+//            }
+//
+//        }
+//    }
 
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(TEAMS, true));
-            writer.write(team.getId() + "," + team.getName() +  "," + team.getScore() + "\n");
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
     public static void saveScore(Score score) throws IOException {
         File file = new File(SCORE);
         System.out.println("file: " + file);
@@ -160,7 +187,7 @@ public class Model {
             String[] gameData = line.split(",");
 
 
-               Game game = new Game( Integer.parseInt(gameData[0]), Integer.parseInt(gameData[1]), Integer.parseInt(gameData[2]));
+               Game game = new Game( Integer.parseInt(gameData[0]));
                 reader.close();
                 return game;
 

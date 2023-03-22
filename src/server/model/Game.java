@@ -11,16 +11,18 @@ public class Game {
     private String phrase;
     private String maskedPhrase;
     private int maxAttempts;
-    private int minPlayers;
-    private int maxPlayers;
+
     private int currentPlayerIndex;
     private int currentTeamIndex;
 
-    public Game(int maxAttempts, int minPlayers, int maxPlayers) {
+    public Game(int maxAttempts) {
         this.teams = new ArrayList<>();
         this.maxAttempts = maxAttempts;
-        this.minPlayers = minPlayers;
-        this.maxPlayers = maxPlayers;
+    }
+
+    public Game(int maxAttempts , ArrayList<Team> teams) {
+        this.teams = teams;
+        this.maxAttempts = maxAttempts;
     }
 
     public void setPhrase(String phrase) {
@@ -34,10 +36,9 @@ public class Game {
 
     public boolean canStart() {
         if (teams.size() < 2) return false;
-
         int team1Size = teams.get(0).getNumberOfPlayers();
         int team2Size = teams.get(1).getNumberOfPlayers();
-        return team1Size >= minPlayers && team1Size <= maxPlayers && team1Size == team2Size;
+        return team1Size == team2Size;
     }
 
     public boolean guessCharacter(char guessedChar) {
@@ -59,14 +60,14 @@ public class Game {
     }
 
     public void nextTurn() {
-        currentPlayerIndex = (currentPlayerIndex + 1) % teams.get(currentTeamIndex).getPlayers().length;
+        currentPlayerIndex = (currentPlayerIndex + 1) % teams.get(currentTeamIndex).getPlayers().size();
         if (currentPlayerIndex == 0) {
             currentTeamIndex = (currentTeamIndex + 1) % teams.size();
         }
     }
 
     public User getCurrentPlayer() {
-        return teams.get(currentTeamIndex).getPlayers()[currentPlayerIndex];
+        return teams.get(currentTeamIndex).getPlayers().get(currentPlayerIndex);
     }
 
     public String getMaskedPhrase() {

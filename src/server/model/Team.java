@@ -3,9 +3,12 @@ package server.model;
 import java.util.ArrayList;
 
 public class Team {
-    User [] players;
+    ArrayList <User> players = new ArrayList<User>();
+    ArrayList<User> onlinePlayers;
     private String name;
     private static int  id = 0;
+    private boolean isTeamReady;
+
     private int score;
     private int wins;
     private int losses;
@@ -71,32 +74,43 @@ public class Team {
     }
 
     public void addPlayer(User user){
-        for (int i = 0; i < players.length; i++) {
-            if(players[i]==null){
-                players[i]=user;
+        for (int i = 0; i < players.size(); i++) {
+            if(players.get(i)==null){
+                players.add(user);
                 break;
             }
         }
     }
     public void removePlayer(User user){
-        for (int i = 0; i < players.length; i++) {
-            if(players[i].getId()==user.getId()){
-                players[i]=null;
+        for (int i = 0; i < players.size(); i++) {
+            if(players.get(i).getId()==user.getId()){
+                players.remove(i);
                 break;
             }
         }
     }
-    public User[] getPlayers() {
+    public ArrayList<User>  getPlayers() {
         return players;
     }
 
     public int getNumberOfPlayers(){
         int count=0;
-        for (int i = 0; i < players.length; i++) {
-            if(players[i]!=null){
+        for (int i = 0; i < players.size(); i++) {
+            if(players.get(i)!=null){
                 count++;
             }
         }
         return count;
     }
+
+    public boolean isTeamReady() {
+        if (onlinePlayers.size() ==  players.size()) {
+            isTeamReady = true;
+
+        }
+        return isTeamReady;
+    }
+
+
+
 }

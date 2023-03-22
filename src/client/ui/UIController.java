@@ -60,6 +60,14 @@ public class UIController extends Thread {
 
     public void run() {
         Scanner sc = new Scanner(System.in);
+
+           signupOrLogin();
+
+
+    }
+
+    public static void  signupOrLogin() {
+        Scanner sc = new Scanner(System.in);
         while (true) {
             System.out.println("1. Login 2. Signup ");
 
@@ -85,16 +93,17 @@ public class UIController extends Thread {
         }
     }
 
-    private void login(Scanner sc) {
+    private static void login(Scanner sc) {
         System.out.println("Enter username:");
         String username = sc.nextLine();
+        usernameToValidate = username;
         System.out.println("Enter password:");
         String password = sc.nextLine();
         System.out.println("Username: " + username + " Password: " + password + " from UIController");
         Client.sendUsernameToServer(username, password);
     }
 
-    private void signup(Scanner sc) {
+    private static void signup(Scanner sc) {
         System.out.println("Enter your name:");
         String name = sc.nextLine();
         System.out.println("Enter username:");
@@ -219,8 +228,12 @@ public class UIController extends Thread {
     public static void validateLoginFromServer(String msg) {
         if (msg.equals("404")) {
             System.out.println("Username not found :(");
+            signupOrLogin();
+
         } else if (msg.equals("401")) {
             System.out.println("Wrong password");
+            signupOrLogin();
+
         } else {
             System.out.println("Logged in successfully");
             Client.setUsername(usernameToValidate);
@@ -241,10 +254,10 @@ public class UIController extends Thread {
     }
 
     public static void handleJoinTeamResponse(String msg) {
-        if (msg.equals("JOINED_TEAM")) {
+        if (msg.equals("OK")) {
             System.out.println("Joined the team successfully");
             // Proceed to the game or wait for other players
-        } else if (msg.equals("TEAM_NOT_FOUND")) {
+        } else if (msg.equals("NOT_OK")) {
             System.out.println("Team not found. Please check the team name and try again.");
         } else {
             System.out.println("Error joining the team. Please try again.");
