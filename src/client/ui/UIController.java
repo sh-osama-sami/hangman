@@ -195,6 +195,7 @@ public class UIController extends Thread {
         String teamName = sc.nextLine();
         teamNameToValidate = teamName;
         Client.sendJoinTeamRequest(teamName);
+
     }
 
     public static boolean validateUsernameLocally(String username) {
@@ -256,6 +257,7 @@ public class UIController extends Thread {
     }
 
     private static void play(){
+
         System.out.println("Game started");
     }
 
@@ -263,7 +265,8 @@ public class UIController extends Thread {
         if (msg.equals("OK")) {
             System.out.println("Joined the team successfully");
             // Proceed to the game or wait for other players
-            Client.checkForTeam(teamNameToValidate);
+//            Client.checkForTeam(teamNameToValidate);
+            Client.checkTeamState(teamNameToValidate);
         } else if (msg.equals("NOT_OK")) {
             System.out.println("Team not found. Please check the team name and try again.");
         } else {
@@ -290,6 +293,16 @@ public class UIController extends Thread {
         // Update the UI with the initial game state
     }
 
+    public static void handleTeamStateResponse(String response){
+        if (response.equals("OK")){
+            System.out.println("Team is ready to play");
+            play();
+        } else if (response.equals("NOT_OK")){
+            System.out.println("Team is not ready to play");
+        } else {
+            System.out.println("Error checking team state");
+        }
+    }
     private static void updateSinglePlayerUI() {
     }
 

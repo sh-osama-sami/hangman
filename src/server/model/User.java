@@ -5,6 +5,7 @@ public class User {
     String username;
     String name;
     String password;
+    Team team;
 
     public Score getScore() {
         return score;
@@ -61,5 +62,13 @@ public class User {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public Team getTeam() {
+        return team;
+    }
+
+    public void setTeam(Team team) {
+        this.team = team;
     }
 }

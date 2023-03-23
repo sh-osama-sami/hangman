@@ -2,12 +2,11 @@ package server;
 
 import server.model.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import static server.Server.onlineUsers;
 import static server.Server.teams;
@@ -26,9 +25,14 @@ public class ClientThread extends Thread {
     PrintStream clientOutput = null;
     SinglePlayerGame game = null;
 
+    String teamname = "";
+
     //Client username
     String username = "";
     ThreadIDUserName threadIDUserName ;
+    static HashMap<Socket, String> clients = new HashMap<>();
+
+
     @Override
     public void run() {
         long threadId = getId();
@@ -94,6 +98,9 @@ public class ClientThread extends Thread {
                     String response = createTeam(teamName,username);
                     clientOutput.println("/CREATE_TEAM:" + response);
                     if (response.equals("OK")) {
+                        this.teamname = teamName;
+                        clients.put(this.communicationSocket, this.teamname);
+
                         System.out.println(teamName + " has been created.");
                     }
                 }
@@ -103,6 +110,8 @@ public class ClientThread extends Thread {
                     String response = joinTeam(teamName,userName);
                     clientOutput.println("/JOIN_TEAM:" + response);
                     if (response.equals("OK")) {
+                        this.teamname = teamName;
+                        clients.put(this.communicationSocket, this.teamname);
                         System.out.println(userName + " has joined " + teamName + ".");
                     }
                 }
@@ -131,6 +140,23 @@ public class ClientThread extends Thread {
                     String response = checkForTeamReady(team);
                     System.out.println("from ClientThread response : " + team + " " + response);
                     clientOutput.println("/CHECK_FOR_TEAM:" + response);
+                    if (response.equals("OK")) {
+                        System.out.println( "A team is ready.");
+                    }
+                } if (input.startsWith("/CHECK_FOR_TEAM_STATE")){
+                    String team = input.split(":")[1];
+                    String response = checkForTeamReady2(team);
+
+                    String senderTeam = clients.get(this.communicationSocket);
+                    for (Map.Entry<Socket, String> entry : clients.entrySet()) {
+                        if (entry.getValue().equals(senderTeam)) {
+                            Socket receiverSocket = entry.getKey();
+                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
+                            out.println("/CHECK_FOR_TEAM_STATE:"+response);
+//                            clientOutput.println("/CHECK_FOR_TEAM_STATE:" + response);
+                        }
+                    }
+                   // clientOutput.println("/CHECK_FOR_TEAM_STATE:" + response);
                     if (response.equals("OK")) {
                         System.out.println( "A team is ready.");
                     }
@@ -281,6 +307,19 @@ public class ClientThread extends Thread {
             }
         }
            return "NOT_OK";
+    }
+
+    public static String checkForTeamReady2(String teamName){
+        for (Team team : teams) {
+            if (team.getName().equals(teamName)) {
+               int teamSize = team.getPlayers().size();
+                if (teamSize >= 2) {
+                    return "OK";
+                }
+            }
+        }
+
+        return "NOT_OK";
     }
 
     private String guess(String guess) {

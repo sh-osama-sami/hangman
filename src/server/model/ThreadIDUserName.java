@@ -1,7 +1,10 @@
 package server.model;
 
+import java.net.Socket;
+
 public class ThreadIDUserName {
     private long threadID;
+    private Socket clientSocket;
     private String userName;
 
     public ThreadIDUserName(long threadID, String userName) {

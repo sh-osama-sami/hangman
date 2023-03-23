@@ -110,4 +110,8 @@ public class Client {
         System.out.println("from client check for team" + teamName);
         serverOutput.println("/CHECK_FOR_TEAM" + ":" + teamName);
     }
+
+  public static void checkTeamState(String teamName) {
+      serverOutput.println("/CHECK_FOR_TEAM_STATE:" + teamName);
+  }
 }

@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class Server {
@@ -40,6 +41,7 @@ public class Server {
 
                 //Creating a thread for the new client
                 ClientThread newClient = new ClientThread(clientSocket);
+
 
                 newClient.start();
                 System.out.println("Client thread started" + newClient.getId());

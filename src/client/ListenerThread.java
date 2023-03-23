@@ -64,16 +64,20 @@ public class ListenerThread extends Thread{
                     {
                         teamNames.add(input.split(":")[i]);
                     }
-                    System.out.println(teamNames.get(1));
-                    if (response.equals("OK"))
-                    {
-                        long thread1 = UiThreadToUsername.getThreadIdByUserName(teamNames.get(0));
-                        long thread2 = UiThreadToUsername.getThreadIdByUserName(teamNames.get(1));
-                        System.out.println("thread1 " + thread1);
-                        System.out.println("thread2 " + thread2);
-                        UIController.callMethodInThread(thread1);
-                        UIController.callMethodInThread(thread2);
-                    }
+//                    System.out.println(teamNames.get(1));
+//                    if (response.equals("OK"))
+//                    {
+//                        long thread1 = UiThreadToUsername.getThreadIdByUserName(teamNames.get(0));
+//                        long thread2 = UiThreadToUsername.getThreadIdByUserName(teamNames.get(1));
+//                        System.out.println("thread1 " + thread1);
+//                        System.out.println("thread2 " + thread2);
+//                        UIController.callMethodInThread(thread1);
+//                        UIController.callMethodInThread(thread2);
+//                    }
+
+                } else if (input.startsWith("/CHECK_FOR_TEAM_STATE")) {
+                     response = input.split(":")[1];
+                    UIController.handleTeamStateResponse(response);
 
                 }
 
