@@ -1,12 +1,18 @@
 package client.ui;
 
 import client.Client;
+import client.UiThreadToUsername;
 
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UIController extends Thread {
     static String usernameToValidate = "";
     public static boolean giving = true;
+    public static ConcurrentHashMap<Long, UIController> threadInstances = new ConcurrentHashMap<>();
+
+     static String teamNameToValidate = "";
 
 
     public static void handleStartSinglePlayerGameResponse(String response) {
@@ -58,7 +64,25 @@ public class UIController extends Thread {
     }
     }
 
+    public static void handleCheckForTeamResponse(String response, ArrayList<String> team) {
+        System.out.println("response " + response);
+        System.out.println("team from ui" + team.toString());
+            if (team.contains(usernameToValidate)) {
+                play();
+            }
+
+
+    }
+    public static void callMethodInThread(long threadId) {
+        UIController instance = threadInstances.get(threadId);
+        System.out.println("instance " + instance.getId());
+        if (instance != null) {
+            instance.play();
+        }
+    }
+
     public void run() {
+        threadInstances.put(getId(), this);
         Scanner sc = new Scanner(System.in);
 
            signupOrLogin();
@@ -100,7 +124,7 @@ public class UIController extends Thread {
         System.out.println("Enter password:");
         String password = sc.nextLine();
         System.out.println("Username: " + username + " Password: " + password + " from UIController");
-        Client.sendUsernameToServer(username, password);
+        Client.sendUsernameToServer(username, password, currentThread().getId());
     }
 
     private static void signup(Scanner sc) {
@@ -111,7 +135,7 @@ public class UIController extends Thread {
         System.out.println("Enter password:");
         String password = sc.nextLine();
         if (validateUsernameLocally(username)) {
-            Client.sendUsernameNameToServer(username, name, password);
+            Client.sendUsernameNameToServer(username, name, password , currentThread().getId());
         }
     }
     private static void showGameOptions() {
@@ -136,27 +160,7 @@ public class UIController extends Thread {
             }
         }
     }
-    private static void singlePlayer(Scanner sc) {
-        while (true) {
-            System.out.println("Choose action:");
-            System.out.println("1. Create Team");
-            System.out.println("2. Join Team");
-            String choice = sc.nextLine();
 
-            if (choice.equals("1")) {
-                createTeam(sc);
-                break;
-            } else if (choice.equals("2")) {
-                joinTeam(sc);
-                break;
-            }else if (choice.equals("-")) {
-                Client.sendExitSignal();
-            }
-            else {
-                System.out.println("Invalid choice. Please enter1 or 2.");
-            }
-        }
-    }
     private static void showMultiplayerOptions(Scanner sc) {
         while (true) {
             System.out.println("Choose action:");
@@ -182,12 +186,14 @@ public class UIController extends Thread {
     private static void createTeam(Scanner sc) {
         System.out.println("Enter team name:");
         String teamName = sc.nextLine();
+        teamNameToValidate = teamName;
         Client.sendCreateTeamRequest(teamName);
     }
 
     private static void joinTeam(Scanner sc) {
         System.out.println("Enter the team name you want to join:");
         String teamName = sc.nextLine();
+        teamNameToValidate = teamName;
         Client.sendJoinTeamRequest(teamName);
     }
 
@@ -195,18 +201,12 @@ public class UIController extends Thread {
         usernameToValidate = username;
         boolean valid = false;
         if (username.isEmpty()) {
-//            JOptionPane.showMessageDialog(welcomeWindow, "You have to enter a username!", "Try again :(", JOptionPane.ERROR_MESSAGE);
-
-//            welcomeWindow.getTextField().requestFocusInWindow();
+//
         } else if (!username.matches("[A-Za-z0-9]+")) {
-//            JOptionPane.showMessageDialog(welcomeWindow, "Incorrect username. Please use only letters a-z and/or numbers 0-9", "Try again :(", JOptionPane.ERROR_MESSAGE);
-//            welcomeWindow.getTextField().setText("");
-//            welcomeWindow.getTextField().requestFocusInWindow();
+//
             System.out.println("Incorrect username. Please use only letters a-z and/or numbers 0-9\", \"Try again :(");
         } else if (username.length() > 10) {
-//            JOptionPane.showMessageDialog(welcomeWindow, "Username too long. Please use up to 10 characters.", "Try again :(", JOptionPane.ERROR_MESSAGE);
-//            welcomeWindow.getTextField().setText("");
-//            welcomeWindow.getTextField().requestFocusInWindow();
+//
             System.out.println("Username too long. Please use up to 10 characters.\", \"Try again :(");
         } else {
             valid = true;
@@ -216,11 +216,10 @@ public class UIController extends Thread {
 
     public static void validateUsernameFromServer(String msg) {
         if (msg.equals("NOT_OK")) {
-//            JOptionPane.showMessageDialog(welcomeWindow, "Username already taken. Please choose a different one.", "Try again :(", JOptionPane.ERROR_MESSAGE);
             System.out.println("Username already taken. Please choose a different one Try again :(");
         } else {
             Client.setUsername(usernameToValidate);
-//            showConnectingWindow();
+            Client.uiThreadToUsernameList.add(new UiThreadToUsername(currentThread().getId(), usernameToValidate));
         }
 
     }
@@ -237,6 +236,8 @@ public class UIController extends Thread {
         } else {
             System.out.println("Logged in successfully");
             Client.setUsername(usernameToValidate);
+            Client.uiThreadToUsernameList.add(new UiThreadToUsername(currentThread().getId(), usernameToValidate));
+            System.out.println("thread id: " + currentThread().getId());
             showGameOptions();
         }
     }
@@ -246,6 +247,7 @@ public class UIController extends Thread {
         if (msg.equals("OK")) {
             System.out.println("Team created successfully");
             // Proceed to the game or wait for other players
+
         } else if (msg.equals("TEAM_NAME_TAKEN")) {
             System.out.println("Team name already taken. Please choose a different one.");
         } else {
@@ -253,10 +255,15 @@ public class UIController extends Thread {
         }
     }
 
+    private static void play(){
+        System.out.println("Game started");
+    }
+
     public static void handleJoinTeamResponse(String msg) {
         if (msg.equals("OK")) {
             System.out.println("Joined the team successfully");
             // Proceed to the game or wait for other players
+            Client.checkForTeam(teamNameToValidate);
         } else if (msg.equals("NOT_OK")) {
             System.out.println("Team not found. Please check the team name and try again.");
         } else {

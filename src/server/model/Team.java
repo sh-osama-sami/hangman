@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 public class Team {
     ArrayList <User> players = new ArrayList<User>();
-    ArrayList<User> onlinePlayers;
+    ArrayList<User> onlinePlayers= new ArrayList<User>();
     private String name;
     private static int  id = 0;
     private boolean isTeamReady;
@@ -74,12 +74,7 @@ public class Team {
     }
 
     public void addPlayer(User user){
-        for (int i = 0; i < players.size(); i++) {
-            if(players.get(i)==null){
-                players.add(user);
-                break;
-            }
-        }
+        players.add(user);
     }
     public void removePlayer(User user){
         for (int i = 0; i < players.size(); i++) {
@@ -109,6 +104,18 @@ public class Team {
 
         }
         return isTeamReady;
+    }
+
+    public String playersToString(){
+        System.out.println("players size: "+players.size());
+        String playersString="";
+        for (int i = 0; i < players.size(); i++) {
+            if(players.get(i)!=null){
+                playersString+=players.get(i).getUsername()+":";
+            }
+        }
+        System.out.println("playersString: "+playersString);
+        return playersString;
     }
 
 

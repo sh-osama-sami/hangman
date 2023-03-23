@@ -4,6 +4,7 @@ import client.ui.UIController;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class ListenerThread extends Thread{
     BufferedReader serverInput = null;
@@ -51,6 +52,28 @@ public class ListenerThread extends Thread{
                     int noOfGuesses = Integer.parseInt(input.split(":")[3]);
                     System.out.println("Server: guess " + response);
                     UIController.handleGuessResponse(response,maskedWord, noOfGuesses);
+
+                }
+                else if (input.startsWith("/CHECK_FOR_TEAM:"))
+                {
+                    System.out.println("input " + input);
+                    response = input.split(":")[1];
+                    ArrayList<String> teamNames = new ArrayList<>();
+
+                    for (int i = 2 ; i < input.split(":").length ; i++)
+                    {
+                        teamNames.add(input.split(":")[i]);
+                    }
+                    System.out.println(teamNames.get(1));
+                    if (response.equals("OK"))
+                    {
+                        long thread1 = UiThreadToUsername.getThreadIdByUserName(teamNames.get(0));
+                        long thread2 = UiThreadToUsername.getThreadIdByUserName(teamNames.get(1));
+                        System.out.println("thread1 " + thread1);
+                        System.out.println("thread2 " + thread2);
+                        UIController.callMethodInThread(thread1);
+                        UIController.callMethodInThread(thread2);
+                    }
 
                 }
 

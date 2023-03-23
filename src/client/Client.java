@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Client {
@@ -16,6 +17,7 @@ public class Client {
     static Socket communicationSocket = null;
     public static LinkedList<String> onlineLista = new LinkedList<String>();
 
+    public static ArrayList<UiThreadToUsername> uiThreadToUsernameList = new ArrayList<>();
 
     private static String playerUsername ="";
 
@@ -40,7 +42,9 @@ public class Client {
             serverInput = new BufferedReader(new InputStreamReader(communicationSocket.getInputStream()));
 
             UIController gui = new UIController();
+
             gui.start();
+            System.out.println("gui thread number from client:" + gui.getId());
 
             //Input from the server
             listener = new ListenerThread(serverInput);
@@ -56,10 +60,11 @@ public class Client {
 
     }
     //Username validation
-    public static void sendUsernameNameToServer(String username ,String name ,String pass) {
+    public static void sendUsernameNameToServer(String username ,String name ,String pass, long UiID) {
+
         serverOutput.println("/USERNAME:"+username+":"+name+":"+pass);
     }
-    public static void sendUsernameToServer(String username ,String pass) {
+    public static void sendUsernameToServer(String username ,String pass , long UiID) {
         System.out.println("/LOGIN:"+username+":"+pass);
         serverOutput.println("/LOGIN:"+username+":"+pass);
     }
@@ -76,7 +81,7 @@ public class Client {
     }
 
     public static void sendCreateTeamRequest(String teamName) {
-        serverOutput.println("/CREATE_TEAM:"+teamName);
+        serverOutput.println("/CREATE_TEAM:"+teamName + ":" + getUsername());
 
     }
 
@@ -99,5 +104,10 @@ public class Client {
 
     public static void sendGuessToServer(String guess) {
         serverOutput.println("/GUESS"+ ":" + guess);
+    }
+
+    public static void checkForTeam(String teamName) {
+        System.out.println("from client check for team" + teamName);
+        serverOutput.println("/CHECK_FOR_TEAM" + ":" + teamName);
     }
 }

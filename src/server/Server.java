@@ -1,7 +1,9 @@
 package server;
 
+import client.Client;
 import server.model.Model;
 import server.model.Team;
+import server.model.ThreadIDUserName;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -11,6 +13,7 @@ import java.util.LinkedList;
 
 public class Server {
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
+    public static ArrayList<ThreadIDUserName> threadIDUserNameList = new ArrayList<>();
     public static LinkedList<Integer> activeGames = new LinkedList<Integer>();
     public static ArrayList<Team> teams = new ArrayList<Team>();
 
@@ -37,8 +40,9 @@ public class Server {
 
                 //Creating a thread for the new client
                 ClientThread newClient = new ClientThread(clientSocket);
+
                 newClient.start();
-                System.out.println("Client thread started" + newClient.getName());
+                System.out.println("Client thread started" + newClient.getId());
             }
 
         } catch (IOException e) {
