@@ -92,9 +92,9 @@ public class Client {
         System.exit(0);
         serverOutput.println("/EXIT");
     }
-    public static void sendQuitTheGameSignal(String opponent){
+    public static void sendQuitTheGameSignal( ){
         System.exit(0);
-        serverOutput.println("/QUIT:"+opponent);
+        serverOutput.println("/QUIT:"+playerUsername);
     }
 
     public static void sendStartSinglePlayerGameRequest() {

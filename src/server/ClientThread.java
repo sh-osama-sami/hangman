@@ -34,6 +34,7 @@ public class ClientThread extends Thread {
     String username = "";
     ThreadIDUserName threadIDUserName ;
     static HashMap<Socket, String> clients = new HashMap<>();
+    static  HashMap<String, String> team1Vsteam2 = new HashMap<>();
     static HashMap<Socket, String> socketUsernameMap = new HashMap<>();
     static ConcurrentHashMap<String, Boolean> readyTeams = new ConcurrentHashMap<>();
 
@@ -70,6 +71,21 @@ public class ClientThread extends Thread {
                     forwardQuitSignal(name);
                     Server.activeGames.remove(name);
                     Server.activeGames.remove(this.username);
+                    String senderTeam = clients.get(this.communicationSocket);
+                    String clientname = socketUsernameMap.get(this.communicationSocket);
+                    String receiverTeam = team1Vsteam2.get(senderTeam);
+                    for (Map.Entry<Socket, String> entry : clients.entrySet()) {
+                        if (entry.getValue().equals(senderTeam)) {
+                            Socket receiverSocket = entry.getKey();
+                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
+                            out.println("/QUIT_SENT:"+clientname);
+                        }
+                        if (entry.getValue().equals(receiverTeam)) {
+                            Socket receiverSocket = entry.getKey();
+                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
+                            out.println("/QUIT_SENT:"+clientname);
+                        }
+                    }
 
                     //System.out.println("broadcast");
                 }
@@ -204,6 +220,7 @@ public class ClientThread extends Thread {
         if (teamNamesReady.size()>0)
         {
             String team2 = teamNamesReady.get(0);
+            team1Vsteam2.put(team,team2);
             teamNamesReady.remove(0);
             return startMultiplayerGame(team, team2,word);
         }
@@ -424,15 +441,23 @@ public class ClientThread extends Thread {
     }
 
     private String joinTeam(String teamName , String userName) throws IOException {
+
         for (Team team : teams) {
             if (team.getName().equals(teamName)) {
                 User u = Model.loadUserFromFile(userName);
-                team.addPlayer(u);
-                System.out.println(team.getPlayers().get(1).getName());
-                System.out.println("player"+u.getName()+ "added to team: " + teamName);
-                System.out.println("team players: " + team.playersToString());
-
+                for (int i = 0; i < team.getPlayers().size(); i++) {
+                    if (team.getPlayers().get(i).getUsername().equals(userName)) {
+                        return "NOT_OK_DUPLICATE";
+                    }
+                }
+              team.addPlayer(u);
                 return "OK";
+
+//                System.out.println(team.getPlayers().get(1).getName());
+//                System.out.println("player"+u.getName()+ "added to team: " + teamName);
+//                System.out.println("team players: " + team.playersToString());
+
+//                return "OK";
             }
         }
            return "NOT_OK";

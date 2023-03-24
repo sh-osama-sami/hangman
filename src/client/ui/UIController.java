@@ -45,11 +45,14 @@ public class UIController extends Thread {
         while (true) {
             System.out.println("Guess a character: ");
             String guess = sc.nextLine();
-            if (guess.length() == 1) {
+            if (guess.length() == 1 && !guess.equals("-")) {
                 char guessedChar = guess.charAt(0);
                 Client.sendGuessToServerMultiplayer(String.valueOf(guessedChar), usernameToValidate);
                 break;
-            } else {
+            }else if (guess.equals("-")) {
+                Client.sendQuitTheGameSignal();
+            }
+            else {
                 System.out.println("Invalid guess. Please enter a single character.");
             }
         }
@@ -133,7 +136,6 @@ public class UIController extends Thread {
             }
             else {
                 System.out.println("Invalid choice. Please enter 1 or 2.");
-                break;
             }
 
         }
@@ -240,20 +242,24 @@ public class UIController extends Thread {
     public static void validateUsernameFromServer(String msg) {
         if (msg.equals("NOT_OK")) {
             System.out.println("Username already taken. Please choose a different one Try again :(");
+            signupOrLogin();
         } else {
             Client.setUsername(usernameToValidate);
             Client.uiThreadToUsernameList.add(new UiThreadToUsername(currentThread().getId(), usernameToValidate));
+            System.out.println("signed up successfully");
+            showGameOptions();
+
         }
 
     }
 
     public static void validateLoginFromServer(String msg) {
         if (msg.equals("404")) {
-            System.out.println("Username not found :(");
+            System.out.println("404 Username not found :(");
             signupOrLogin();
 
         } else if (msg.equals("401")) {
-            System.out.println("Wrong password");
+            System.out.println("401 Wrong password");
             signupOrLogin();
 
         } else {
@@ -268,13 +274,16 @@ public class UIController extends Thread {
 
     public static void handleCreateTeamResponse(String msg) {
         if (msg.equals("OK")) {
-            System.out.println("Team created successfully");
+            System.out.println("Team created successfully , waiting for other players to join");
             // Proceed to the game or wait for other players
 
         } else if (msg.equals("TEAM_NAME_TAKEN")) {
             System.out.println("Team name already taken. Please choose a different one.");
+            showMultiplayerOptions(new Scanner(System.in));
         } else {
             System.out.println("Error creating team. Please try again.");
+            showMultiplayerOptions(new Scanner(System.in));
+
         }
     }
 
@@ -290,20 +299,22 @@ public class UIController extends Thread {
             Client.checkTeamState(teamNameToValidate);
         } else if (msg.equals("NOT_OK")) {
             System.out.println("Team not found. Please check the team name and try again.");
+            showMultiplayerOptions(new Scanner(System.in));
+        } else if (msg.equals("NOT_OK_DUPLICATE")) {
+            System.out.println("You are already in this team.");
+            showMultiplayerOptions(new Scanner(System.in));
+
         } else {
             System.out.println("Error joining the team. Please try again.");
+            showMultiplayerOptions(new Scanner(System.in));
         }
     }
 
     //Recieve the message when your opponent has left the game
     public static void receiveQuitTheGameSignal(String name) {
 
-//        if(dialogForWord!=null)
-//            dialogForWord.setVisible(false);
-        giving = false;
-
         System.out.println("player " + name + " has quit the game");
-
+        showMultiplayerOptions(new Scanner(System.in));
 
     }
 
