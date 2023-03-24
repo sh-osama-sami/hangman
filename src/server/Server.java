@@ -1,6 +1,7 @@
 package server;
 
 import client.Client;
+import server.model.Game;
 import server.model.Model;
 import server.model.Team;
 import server.model.ThreadIDUserName;
@@ -11,12 +12,15 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
     public static ArrayList<ThreadIDUserName> threadIDUserNameList = new ArrayList<>();
-    public static LinkedList<Integer> activeGames = new LinkedList<Integer>();
+    public static ArrayList<Game> activeGames = new ArrayList<Game>();
     public static ArrayList<Team> teams = new ArrayList<Team>();
+
+
 
     public static void main(String[] args) {
 

@@ -114,4 +114,9 @@ public class Client {
   public static void checkTeamState(String teamName) {
       serverOutput.println("/CHECK_FOR_TEAM_STATE:" + teamName);
   }
+
+
+    public static void sendGuessToServerMultiplayer(String valueOf, String usernameToValidate) {
+        serverOutput.println("/GUESS_MULTIPLAYER"+ ":" + valueOf + ":" + usernameToValidate);
+    }
 }

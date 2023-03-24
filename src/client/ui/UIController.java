@@ -40,6 +40,21 @@ public class UIController extends Thread {
         }
     }
 
+    private static void guessCharacterMultiplayerMenu() {
+        Scanner sc = new Scanner(System.in);
+        while (true) {
+            System.out.println("Guess a character: ");
+            String guess = sc.nextLine();
+            if (guess.length() == 1) {
+                char guessedChar = guess.charAt(0);
+                Client.sendGuessToServerMultiplayer(String.valueOf(guessedChar), usernameToValidate);
+                break;
+            } else {
+                System.out.println("Invalid guess. Please enter a single character.");
+            }
+        }
+    }
+
     public static void handleGuessResponse(String response, String maskedWord , int numberOfGuesses) {
         if (response.equals("CORRECT")) {
             System.out.println("Correct guess!");
@@ -64,21 +79,28 @@ public class UIController extends Thread {
     }
     }
 
-    public static void handleCheckForTeamResponse(String response, ArrayList<String> team) {
-        System.out.println("response " + response);
-        System.out.println("team from ui" + team.toString());
-            if (team.contains(usernameToValidate)) {
-                play();
-            }
 
 
-    }
-    public static void callMethodInThread(long threadId) {
-        UIController instance = threadInstances.get(threadId);
-        System.out.println("instance " + instance.getId());
-        if (instance != null) {
-            instance.play();
+    public static void handleGameStartedResponse(String response) {
+        if (response.equals("OK")) {
+            System.out.println("Game started!");
+
+        } else {
+            System.out.println("Failed to start game.");
         }
+    }
+
+    public static void handleYourTurnResponse(String response) {
+        if (response.equals("OK")) {
+            System.out.println("It's your turn!");
+            guessCharacterMultiplayerMenu();
+        } else {
+            System.out.println("Failed to start game.");
+        }
+    }
+
+    public static void handleMaskedWordResponse(String response) {
+        System.out.println("Masked word: " + response);
     }
 
     public void run() {
@@ -258,14 +280,13 @@ public class UIController extends Thread {
 
     private static void play(){
 
-        System.out.println("Game started");
+        System.out.println("Team Ready waiting for the other team to be ready");
+
     }
 
     public static void handleJoinTeamResponse(String msg) {
         if (msg.equals("OK")) {
             System.out.println("Joined the team successfully");
-            // Proceed to the game or wait for other players
-//            Client.checkForTeam(teamNameToValidate);
             Client.checkTeamState(teamNameToValidate);
         } else if (msg.equals("NOT_OK")) {
             System.out.println("Team not found. Please check the team name and try again.");
