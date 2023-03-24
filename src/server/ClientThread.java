@@ -17,10 +17,12 @@ public class ClientThread extends Thread {
     Socket communicationSocket = null;
 
     //Constructor
-    public ClientThread(Socket clientSocket) {
+    BufferedReader serverInput;
+    //Constructor
+    public ClientThread(Socket clientSocket, BufferedReader serverInput) {
         communicationSocket = clientSocket;
+        this.serverInput = serverInput;
     }
-
     //Setting up streams for communication
     BufferedReader clientInput = null;
     PrintStream clientOutput = null;
@@ -46,7 +48,7 @@ public class ClientThread extends Thread {
             //Initializing I/O streams
             clientInput = new BufferedReader(new InputStreamReader(communicationSocket.getInputStream()));
             clientOutput = new PrintStream(communicationSocket.getOutputStream());
-
+            lookupListener listener = new lookupListener(serverInput);
             while (true) {
                 String input = clientInput.readLine();
 
@@ -122,15 +124,22 @@ public class ClientThread extends Thread {
                 }
                 if (input.startsWith("/START_SINGLE_PLAYER_GAME")) {
                     System.out.println("start single player game from server");
-                    String response = startSinglePlayerGame();
+                    Server.sendRandomWordRequest();
+
+                    String word =listener.getWordFromServer();
+//                    listener.start();
+                    String response = startSinglePlayerGame(word);
                     System.out.println("response from start single player game: " + response);
                     clientOutput.println("/START_SINGLE_PLAYER_GAME:" + response);
                     if (response.equals("OK")) {
+
+
                         System.out.println( "A single player game.");
                     }
                 }
                 if (input.startsWith("/GUESS:")){
                     String guess = input.split(":")[1];
+
                     String response = guess(guess);
                     clientOutput.println("/GUESS:" + response);
                     if (response.equals("CORRECT")) {
@@ -141,6 +150,8 @@ public class ClientThread extends Thread {
                 }
 
                 if (input.startsWith("/CHECK_FOR_TEAM_STATE")){
+                    Server.sendRandomWordRequest();
+                    String word =listener.getWordFromServer();
                     String team = input.split(":")[1];
                     String response = checkForTeamReady2(team);
                     String senderTeam = clients.get(this.communicationSocket);
@@ -155,7 +166,7 @@ public class ClientThread extends Thread {
                    // clientOutput.println("/CHECK_FOR_TEAM_STATE:" + response);
                     if (response.equals("OK")) {
                         System.out.println( "A team is ready.");
-                        joinGame(team);
+                        joinGame(team , word);
                     }
                 }
                 if (input.startsWith("/GUESS_MULTIPLAYER:")){
@@ -187,14 +198,14 @@ public class ClientThread extends Thread {
 
     }
 
-    private String joinGame(String team) {
+    private String joinGame(String team , String word ) {
         System.out.println("join game from server joinGame" + team);
         System.out.println("teamNamesReady size: " + teamNamesReady.size());
         if (teamNamesReady.size()>0)
         {
             String team2 = teamNamesReady.get(0);
             teamNamesReady.remove(0);
-            return startMultiplayerGame(team, team2);
+            return startMultiplayerGame(team, team2,word);
         }
         else {
             teamNamesReady.add(team);
@@ -204,7 +215,7 @@ public class ClientThread extends Thread {
 
 
 
-    private String startMultiplayerGame(String teamName1, String teamName2) {
+    private String startMultiplayerGame(String teamName1, String teamName2,String word) {
         System.out.println("start multiplayer game from server" + teamName1 + " " + teamName2);
         if (teamName1.equals(teamName2)) {
             return "FAIL";
@@ -221,9 +232,11 @@ public class ClientThread extends Thread {
 
                 }
             }
-            ArrayList<String> words = Model.loadLookUpFile();
+
+//            ArrayList<String> words = Model.loadLookUpFile();
+
             Game newGame = new Game(3, teamList);
-            newGame.setPhrase(words.get(0));
+            newGame.setPhrase(word);
             Server.activeGames.add(newGame);
             System.out.println("Game started between " + teamName1 + " and " + teamName2 + ".");
             System.out.println("active games size: " + Server.activeGames.size());
@@ -444,14 +457,13 @@ public class ClientThread extends Thread {
 
     }
 
-    private String startSinglePlayerGame() {
-        ArrayList<String> words = Model.loadLookUpFile();
+    private String startSinglePlayerGame(String word) {
 
-        game = new SinglePlayerGame(words.get(0),3);
+        game = new SinglePlayerGame(    word,3);
 
         return "OK";
 
-    };
+    }
 
     private String signup (String name ,String username ,String pass) throws IOException {
 
