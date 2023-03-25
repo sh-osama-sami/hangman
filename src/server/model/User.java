@@ -7,7 +7,7 @@ public class User {
     String password;
     Team team;
     int noOfAttempts = 5;
-
+    int GameRoomScore = 0;
 
 
     public Score getScore() {
@@ -73,5 +73,17 @@ public class User {
 
     public void setTeam(Team team) {
         this.team = team;
+    }
+
+    public void decrementMaxAttempts() {
+        this.noOfAttempts--;
+    }
+
+    public void incrementScore() {
+        this.GameRoomScore++;
+    }
+
+    public int getMaxAttempts() {
+        return this.noOfAttempts;
     }
 }
