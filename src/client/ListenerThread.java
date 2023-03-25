@@ -69,10 +69,15 @@ public class ListenerThread extends Thread{
                      response = input.split(":")[1];
                     UIController.handleTeamStateResponse(response);
 
-                } else if (input.startsWith("/GAME_STARTED")) {
+                } else if (input.startsWith("/NOTIFY_ALL")) {
                     response = input.split(":")[1];
                     UIController.handleGameStartedResponse(response);
                     
+                }
+                else if (input.startsWith("/NOTIFY_PLAYER"))
+                {
+                    response = input.split(":")[1];
+                    UIController.handleNotifyPlayer(response);
                 }
                 else if(input.startsWith("/YOUR_TURN"))
                 {

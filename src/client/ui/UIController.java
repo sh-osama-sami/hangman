@@ -61,7 +61,7 @@ public class UIController extends Thread {
     public static void handleGuessResponse(String response, String maskedWord , int numberOfGuesses) {
         if (response.equals("CORRECT")) {
             System.out.println("Correct guess!");
-            System.out.println("Masked word: " + maskedWord);
+            System.out.println("Masked word guess response: " + maskedWord);
             if (maskedWord.contains("_")) {
                 guessCharacterMenu();
             } else {
@@ -71,7 +71,7 @@ public class UIController extends Thread {
         }
          else if (response.equals("WRONG")) {
             System.out.println("Wrong guess!");
-            System.out.println("Masked word: " + maskedWord);
+            System.out.println("Masked word guess response:" + maskedWord);
             if (numberOfGuesses > 0) {
                 guessCharacterMenu();
             } else {
@@ -85,12 +85,7 @@ public class UIController extends Thread {
 
 
     public static void handleGameStartedResponse(String response) {
-        if (response.equals("OK")) {
-            System.out.println("Game started!");
-
-        } else {
-            System.out.println("Failed to start game.");
-        }
+        System.out.println(response);
     }
 
     public static void handleYourTurnResponse(String response) {
@@ -103,7 +98,22 @@ public class UIController extends Thread {
     }
 
     public static void handleMaskedWordResponse(String response) {
-        System.out.println("Masked word: " + response);
+        System.out.println("response from masked word: " + response);
+        if(response.startsWith("WON"))
+        {
+            System.out.println("You won!");
+            showGameOptions();
+        }
+        if (response.startsWith("LOST")) {
+            System.out.println("You lost!");
+            showGameOptions();
+        }
+        System.out.println("Masked word notification: " + response);
+    }
+
+    public static void handleNotifyPlayer(String response) {
+        System.out.println(response);
+
     }
 
     public void run() {

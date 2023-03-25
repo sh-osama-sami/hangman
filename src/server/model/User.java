@@ -6,6 +6,9 @@ public class User {
     String name;
     String password;
     Team team;
+    int noOfAttempts = 5;
+
+
 
     public Score getScore() {
         return score;

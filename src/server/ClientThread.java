@@ -259,19 +259,19 @@ public class ClientThread extends Thread {
             System.out.println("active games size: " + Server.activeGames.size());
             System.out.println("active games: " + Server.activeGames.get(0));
             System.out.println("active games: " + Server.activeGames.get(0));
-            notifyGameStart(teamName1, teamName2);
+            notifyGameMembers(teamName1, teamName2, "A game has started between " + teamName1 + " and " + teamName2 + "." +"\n wait for your turn");
             String playerName = getCurrentPlayer(newGame);
             notifyPlayerTurn(playerName);
             return "OK";
         }
     }
-    private void notifyGameStart(String teamName1, String teamName2) {
+    private void notifyGameMembers(String teamName1, String teamName2 , String message) {
         for (Map.Entry<Socket, String> entry : clients.entrySet()) {
             if (entry.getValue().equals(teamName1) || entry.getValue().equals(teamName2)) {
                 Socket receiverSocket = entry.getKey();
                 try {
                     PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-                    out.println("/GAME_STARTED:"+"OK");
+                    out.println("/NOTIFY_ALL:"+message);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -306,6 +306,15 @@ public class ClientThread extends Thread {
         if (currentPlayerThread != null) {
             currentPlayerThread.clientOutput.println("/YOUR_TURN:" + "OK");
         }
+    }
+
+    private void notifyPlayerWithAMessage(String currentPlayerUsername , String message) {
+        System.out.println("notify player message: " + currentPlayerUsername);
+        ClientThread currentPlayerThread = findClientThreadByUsername(currentPlayerUsername);
+        if (currentPlayerThread != null) {
+            currentPlayerThread.clientOutput.println("/NOTIFY_PLAYER:" + message);
+        }
+
     }
 
     private Game findGameByUsername(String username) {
@@ -380,23 +389,34 @@ public class ClientThread extends Thread {
         }
 
     }
+    private Team getOpponentTeam(Team team, Game game) {
+        // Find the opponent team from the teams in the game
+        for (Team teamInGame : game.getTeams()) {
+            if (!teamInGame.getName().equals(team.getName())) {
+                return teamInGame;
+            }
+        }
+        return null;
+    };
     private String guessMultiplayer(Game game, String guessedString , Team team) {
     System.out.println("guess multiplayer from server game:" + game + " guessedString: " + guessedString);
         char guessedChar = guessedString.charAt(0);
-        String nextPlayer = nextTurn(game);
         if (game != null) {
             if (game.guessCharacter(guessedChar)) {
                 if (game.isGameOver()) {
-                    notifyPlayerTurn(nextPlayer);
+                    notifyTeamMembers(team, "WON:" + game.getMaskedPhrase());
+//                    Team opponentTeam = getOpponentTeam(team, game);
                     return "WON:" + game.getMaskedPhrase();
                 } else {
                     notifyTeamMembers(team, game.getMaskedPhrase());
+                    String nextPlayer = nextTurn(game);
                     notifyPlayerTurn(nextPlayer);
                     return "CORRECT:" + game.getMaskedPhrase();
 
                 }
             } else {
                 notifyTeamMembers(team, game.getMaskedPhrase());
+                String nextPlayer = nextTurn(game);
                 notifyPlayerTurn(nextPlayer);
                 return "WRONG:" + game.getMaskedPhrase();
             }

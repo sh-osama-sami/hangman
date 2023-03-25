@@ -6,6 +6,8 @@ public class Team {
     ArrayList <User> players = new ArrayList<User>();
     ArrayList<User> onlinePlayers= new ArrayList<User>();
     private String name;
+    private int currentAttempt;
+    private String teamMaskedPhrase = "";
     private static int  id = 0;
     private boolean isTeamReady;
 
@@ -118,6 +120,18 @@ public class Team {
         return playersString;
     }
 
+    public void setTeamMaskedPhrase(String maskedPhrase) {
+        teamMaskedPhrase = maskedPhrase;
+    }
+
+
+    public String getTeamMaskedPhrase() {
+        return teamMaskedPhrase;
+    }
+
+    public int getCurrentAttempt() {
+        return currentAttempt;
+    }
 
 
 }
