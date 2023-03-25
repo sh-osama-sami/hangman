@@ -7,6 +7,7 @@ public class Team {
     ArrayList<User> onlinePlayers= new ArrayList<User>();
     private String name;
     private int currentAttempt;
+    private int maxAttempts;
     private String teamMaskedPhrase = "";
     private static int  id = 0;
     private boolean isTeamReady;
@@ -133,5 +134,20 @@ public class Team {
         return currentAttempt;
     }
 
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
 
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+    }
+
+
+    public void decrementMaxAttempts() {
+        maxAttempts--;
+    }
+
+    public void incrementScore() {
+        score++;
+    }
 }

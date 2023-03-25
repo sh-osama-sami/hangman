@@ -250,8 +250,6 @@ public class ClientThread extends Thread {
                 }
             }
 
-//            ArrayList<String> words = Model.loadLookUpFile();
-
             Game newGame = new Game(3, teamList);
             newGame.setPhrase(word);
             Server.activeGames.add(newGame);
@@ -271,7 +269,7 @@ public class ClientThread extends Thread {
                 Socket receiverSocket = entry.getKey();
                 try {
                     PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-                    out.println("/NOTIFY_ALL:"+message);
+                    out.println(message);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -308,11 +306,11 @@ public class ClientThread extends Thread {
         }
     }
 
-    private void notifyPlayerWithAMessage(String currentPlayerUsername , String message) {
+    private void notifyPlayerWithAResult(String currentPlayerUsername , String message) {
         System.out.println("notify player message: " + currentPlayerUsername);
         ClientThread currentPlayerThread = findClientThreadByUsername(currentPlayerUsername);
         if (currentPlayerThread != null) {
-            currentPlayerThread.clientOutput.println("/NOTIFY_PLAYER:" + message);
+            currentPlayerThread.clientOutput.println("Match result:" + message);
         }
 
     }
@@ -380,7 +378,7 @@ public class ClientThread extends Thread {
                 if (playerSocket != null) {
                     try {
                         PrintWriter out = new PrintWriter(playerSocket.getOutputStream(), true);
-                        out.println("/MASKED_WORD:" + maskedWord);
+                        out.println( maskedWord);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -404,18 +402,32 @@ public class ClientThread extends Thread {
         if (game != null) {
             if (game.guessCharacter(guessedChar)) {
                 if (game.isGameOver()) {
-                    notifyTeamMembers(team, "WON:" + game.getMaskedPhrase());
-//                    Team opponentTeam = getOpponentTeam(team, game);
+                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Game over. " );
+                    Team WonTeam = game.checkWonTeam();
+                    if (WonTeam == null) {
+                        notifyPlayerWithAResult(team.getPlayers().get(0).getUsername(), "DRAW:" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(team.getPlayers().get(1).getUsername(), "DRAW:" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(getOpponentTeam(team, game).getPlayers().get(0).getUsername(), "It's a draw" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(getOpponentTeam(team, game).getPlayers().get(1).getUsername(), "It's a draw" + game.getMaskedPhrase());
+                        return "DRAW:" + game.getMaskedPhrase();
+                    }
+
+                    notifyPlayerWithAResult(WonTeam.getPlayers().get(0).getUsername(), "You team won the game. With team score of  " + WonTeam.getScore());
+                    notifyPlayerWithAResult(WonTeam.getPlayers().get(1).getUsername(), "You team won the game. With team score of "+ WonTeam.getScore() );
+                    Team opponentTeam = getOpponentTeam(WonTeam, game);
+                    notifyPlayerWithAResult(opponentTeam.getPlayers().get(0).getUsername(), "You team lost the game. With team score of " + opponentTeam.getScore());
+                    notifyPlayerWithAResult(opponentTeam.getPlayers().get(1).getUsername(), "You team lost the game. With team score of " + opponentTeam.getScore());
                     return "WON:" + game.getMaskedPhrase();
                 } else {
-                    notifyTeamMembers(team, game.getMaskedPhrase());
+                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Correct guess by team: " + team.getName() + " \nThe word now is: " + game.getMaskedPhrase());
                     String nextPlayer = nextTurn(game);
+                    notifyTeamMembers(team, "Your team score is: " + team.getScore() );
                     notifyPlayerTurn(nextPlayer);
                     return "CORRECT:" + game.getMaskedPhrase();
 
                 }
             } else {
-                notifyTeamMembers(team, game.getMaskedPhrase());
+                notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Wrong guess by team: " + team.getName() + " \nThe word now is: " + game.getMaskedPhrase());
                 String nextPlayer = nextTurn(game);
                 notifyPlayerTurn(nextPlayer);
                 return "WRONG:" + game.getMaskedPhrase();

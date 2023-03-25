@@ -8,22 +8,24 @@ public class Game {
     private String phrase;
     private String maskedPhrase;
 
-    private int maxAttempts;
+
 
     private int currentPlayerIndex;
     private int currentTeamIndex;
 
     public Game(int maxAttempts) {
         this.teams = new ArrayList<>();
-
-        this.maxAttempts = maxAttempts;
+        for (Team team : teams) {
+            team.setMaxAttempts(maxAttempts);
+        }
         initializePlayerAndTeamIndices();
     }
 
     public Game(int maxAttempts, ArrayList<Team> teams) {
         this.teams = teams;
-        this.maxAttempts = maxAttempts;
-
+        for (Team team : teams) {
+            team.setMaxAttempts(maxAttempts);
+        }
         initializePlayerAndTeamIndices();
     }
 
@@ -58,12 +60,18 @@ public class Game {
                 found = true;
             }
         }
+        if (!found) {
+            teams.get(currentTeamIndex).decrementMaxAttempts();
+        }
+        else {
+            teams.get(currentTeamIndex).incrementScore();
+        }
         maskedPhrase = updatedMaskedPhrase.toString();
         return found;
     }
 
     public boolean isGameOver() {
-        return (!maskedPhrase.contains("_") && (teams.get(0).getCurrentAttempt() == teams.get(1).getCurrentAttempt()) || ((teams.get(0).getCurrentAttempt() == maxAttempts) && (teams.get(1).getCurrentAttempt() == maxAttempts)));
+    return ((!maskedPhrase.contains("_")) || ((teams.get(0).getMaxAttempts()<1) || (teams.get(1).getMaxAttempts()<1)));
     }
 
     public String nextTurn() {
@@ -84,5 +92,17 @@ public class Game {
 
     public List<Team> getTeams() {
         return teams;
+    }
+
+    public  Team checkWonTeam() {
+        if (teams.get(0).getMaxAttempts() > teams.get(1).getMaxAttempts()) {
+            return teams.get(0);
+        }
+        else if (teams.get(0).getMaxAttempts() < teams.get(1).getMaxAttempts()) {
+            return teams.get(1);
+        }
+        else {
+            return null;
+        }
     }
 }

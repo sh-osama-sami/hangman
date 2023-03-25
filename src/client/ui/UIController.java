@@ -112,7 +112,15 @@ public class UIController extends Thread {
     }
 
     public static void handleNotifyPlayer(String response) {
-        System.out.println(response);
+        if (response.contains("won")){
+            showGameOptions();
+        }
+        if (response.equals("lost")) {
+            showGameOptions();
+        }
+        if (response.equals("draw")) {
+            showGameOptions();
+        }
 
     }
 

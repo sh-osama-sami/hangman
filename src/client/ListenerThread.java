@@ -74,7 +74,7 @@ public class ListenerThread extends Thread{
                     UIController.handleGameStartedResponse(response);
                     
                 }
-                else if (input.startsWith("/NOTIFY_PLAYER"))
+                else if (input.startsWith("Match result:"))
                 {
                     response = input.split(":")[1];
                     UIController.handleNotifyPlayer(response);
