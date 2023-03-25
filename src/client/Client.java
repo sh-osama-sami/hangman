@@ -89,12 +89,13 @@ public class Client {
         serverOutput.println("/JOIN_TEAM:"+teamName + ":" + getUsername());
     }
     public static void sendExitSignal() {
-        System.exit(0);
         serverOutput.println("/EXIT");
+        System.exit(0);
     }
     public static void sendQuitTheGameSignal( ){
-        System.exit(0);
         serverOutput.println("/QUIT:"+playerUsername);
+        System.exit(0);
+
     }
 
     public static void sendStartSinglePlayerGameRequest() {

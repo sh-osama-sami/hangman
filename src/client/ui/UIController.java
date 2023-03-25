@@ -333,6 +333,8 @@ public class UIController extends Thread {
 
         System.out.println("player " + name + " has quit the game");
         showMultiplayerOptions(new Scanner(System.in));
+        //1
+      //  Client.checkTeamState(teamNameToValidate);
 
     }
 

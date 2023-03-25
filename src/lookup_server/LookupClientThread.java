@@ -36,12 +36,12 @@ public class LookupClientThread extends Thread{
                 }
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.out.println( "client disconnected.");
+
         }
     }
     public static String getRandomWord() {
-        ArrayList<String> phrases = Model.loadLookUpFile();
-        String randomWord = phrases.get((int) (Math.random() * phrases.size()));
+        String randomWord = LookUpServer.phrases.get((int) (Math.random() * LookUpServer.phrases.size()));
         return randomWord;
     }
 }

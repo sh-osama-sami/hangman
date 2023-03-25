@@ -49,6 +49,31 @@ public class Model {
 
         return users;
     }
+    public static ArrayList<User> loadUsersFromFile() {
+        ArrayList<User> users = new ArrayList<>();
+
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(USERS));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                int id = Integer.parseInt(parts[0]);
+                String name = parts[1];
+                String email = parts[2];
+                String password = parts[3];
+
+                User user = new User( name, email, password);
+                users.add(user);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
     public static User loadUserFromFile(String username) throws IOException {
 
         System.out.println("fileName: " + USERS  + " username: " + username
@@ -138,6 +163,61 @@ public class Model {
             e.printStackTrace();
         }
     }
+    public static ArrayList<Score> loadScoreFromFile() throws IOException {
+
+        ArrayList<Score> scores = new ArrayList<>();
+        File file = new File(SCORE);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        System.out.println("reader: " + reader  );
+        String line;
+
+
+        while ((line = reader.readLine()) != null) {
+            System.out.println("line: " + line);
+            String[] socreData = line.split(",");
+
+            Score score = new Score(socreData[0],Integer.parseInt(socreData[1]),Integer.parseInt(socreData[2]),Integer.parseInt(socreData[3]));
+            scores.add(score);
+            reader.close();
+            return scores;
+
+
+        }
+
+        reader.close();
+        return null;
+    }
+    public static void updateScore(Score score) throws FileNotFoundException, IOException {
+
+        File file = new File(SCORE);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        File tempFile = new File("temp.txt");
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            String[] socreData = line.split(",");
+            if (socreData[0].equals(score.getUsername())) {
+                writer.write(score.getUsername() + "," + score.singleGameScore + "," + score.multiGameScore + "," + score.totalScore + "\n");
+            } else {
+                writer.write(line + "\n");
+            }
+        }
+        writer.close();
+        reader.close();
+        file.delete();
+        tempFile.renameTo(file);
+    }
     public static Score loadUserScoreFromFile(String username) throws IOException {
 
         System.out.println("fileName: " + SCORE  + " username: " + username
@@ -216,4 +296,5 @@ public class Model {
 
         return phrases;
     }
+
 }

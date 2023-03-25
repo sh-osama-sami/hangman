@@ -69,23 +69,6 @@ public class ClientThread extends Thread {
                 else if(input.startsWith("/QUIT")){
                     String name=input.split(":")[1];
                     forwardQuitSignal(name);
-                    Server.activeGames.remove(name);
-                    Server.activeGames.remove(this.username);
-                    String senderTeam = clients.get(this.communicationSocket);
-                    String clientname = socketUsernameMap.get(this.communicationSocket);
-                    String receiverTeam = team1Vsteam2.get(senderTeam);
-                    for (Map.Entry<Socket, String> entry : clients.entrySet()) {
-                        if (entry.getValue().equals(senderTeam)) {
-                            Socket receiverSocket = entry.getKey();
-                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-                            out.println("/QUIT_SENT:"+clientname);
-                        }
-                        if (entry.getValue().equals(receiverTeam)) {
-                            Socket receiverSocket = entry.getKey();
-                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-                            out.println("/QUIT_SENT:"+clientname);
-                        }
-                    }
 
                     //System.out.println("broadcast");
                 }
@@ -143,7 +126,6 @@ public class ClientThread extends Thread {
                     Server.sendRandomWordRequest();
 
                     String word =listener.getWordFromServer();
-//                    listener.start();
                     String response = startSinglePlayerGame(word);
                     System.out.println("response from start single player game: " + response);
                     clientOutput.println("/START_SINGLE_PLAYER_GAME:" + response);
@@ -208,6 +190,11 @@ public class ClientThread extends Thread {
         } catch (IOException e) {
             Server.onlineUsers.remove(this);
             broadcastOnlineList(createOnlineList());
+            try {
+                forwardQuitSignal(username);
+            } catch (IOException ex) {
+                System.out.println("Error forwarding quit signal.");
+            }
             System.out.println(username + " disconnected.");
             return;
         }
@@ -220,7 +207,7 @@ public class ClientThread extends Thread {
         if (teamNamesReady.size()>0)
         {
             String team2 = teamNamesReady.get(0);
-            team1Vsteam2.put(team,team2);
+            team1Vsteam2.put(team2,team);
             teamNamesReady.remove(0);
             return startMultiplayerGame(team, team2,word);
         }
@@ -523,34 +510,36 @@ public class ClientThread extends Thread {
     }
 
     private String signup (String name ,String username ,String pass) throws IOException {
-
-        if (Model.loadUserFromFile(username)==null) {
-            this.username = username;
-            User user = new User(name,username,pass);
-            Model.saveUser(user);
-            Server.onlineUsers.add(this);
-            ThreadIDUserName t = new ThreadIDUserName(getId(),username);
-            Server.threadIDUserNameList.add(t);
-            return "OK";
+        for (int i = 0; i < Server.users.size(); i++) {
+            if (Server.users.get(i).getUsername().equals(username)) {
+                return "NOT_OK";
+            }
         }
-        else return "NOT_OK";
+        this.username = username;
+        User user = new User(name,username,pass);
+        Model.saveUser(user);
+        Server.onlineUsers.add(this);
+        ThreadIDUserName t = new ThreadIDUserName(getId(),username);
+        Server.threadIDUserNameList.add(t);
+        return "OK";
     }
     private String login (String username ,String pass) throws IOException {
         System.out.println("from login" + username + " " + pass);
         User u = Model.loadUserFromFile(username);
 //        System.out.println("from login" + u.getUsername() + " " + u.getPassword());
-        if (Model.loadUserFromFile(username)!=null) {
-            if (u.getPassword().equals(pass)) {
-                this.username = username;
-                Server.onlineUsers.add(this);
-                ThreadIDUserName t = new ThreadIDUserName(getId(),username);
-                Server.threadIDUserNameList.add(t);
-                return "OK";
+        for (int i = 0; i < Server.users.size() ; i++) {
+            if (Server.users.get(i).getUsername().equals(username)) {
+                if (u.getPassword().equals(pass)) {
+                    this.username = username;
+                    Server.onlineUsers.add(this);
+                    ThreadIDUserName t = new ThreadIDUserName(getId(),username);
+                    Server.threadIDUserNameList.add(t);
+                    return "OK";
+                }
+                else return "401";
             }
-            else return "401";
-
         }
-        else return "404";
+        return "404";
     }
 
     private void broadcastOnlineList(String list) {
@@ -572,11 +561,36 @@ public class ClientThread extends Thread {
     }
 
 
-    private void forwardQuitSignal(String name) {
-        for(ClientThread t : Server.onlineUsers) {
-            if(t.username.equals(name)) {
-                t.clientOutput.println("/QUIT_SENT:"+this.username);
-                return;
+    private void forwardQuitSignal(String name) throws IOException {
+        Server.activeGames.remove(name);
+        Server.activeGames.remove(this.username);
+        String senderTeam = clients.get(this.communicationSocket);
+//                    String clientname = socketUsernameMap.get(this.communicationSocket);
+        //remove player from team
+
+        for (int i = 0; i < teams.size(); i++) {
+            if (teams.get(i).getName().equals(senderTeam)){
+                for (int j = 0; j <teams.get(i).getPlayers().size() ; j++) {
+                    if (teams.get(i).getPlayers().get(i).getUsername().equals(name)) {
+                        teams.get(i).getPlayers().remove(j);
+                    }
+                }
+
+            }
+
+
+        }
+        String receiverTeam = team1Vsteam2.get(senderTeam);
+        for (Map.Entry<Socket, String> entry : clients.entrySet()) {
+            if (entry.getValue().equals(senderTeam)) {
+                Socket receiverSocket = entry.getKey();
+                PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
+                out.println("/QUIT_SENT:"+name);
+            }
+            if (entry.getValue().equals(receiverTeam)) {
+                Socket receiverSocket = entry.getKey();
+                PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
+                out.println("/QUIT_SENT:"+name);
             }
         }
     }

@@ -1,10 +1,7 @@
 package server;
 
 import client.Client;
-import server.model.Game;
-import server.model.Model;
-import server.model.Team;
-import server.model.ThreadIDUserName;
+import server.model.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,10 +15,14 @@ import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
+    public static Game game = null;
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
     public static ArrayList<ThreadIDUserName> threadIDUserNameList = new ArrayList<>();
     public static ArrayList<Game> activeGames = new ArrayList<Game>();
     public static ArrayList<Team> teams = new ArrayList<Team>();
+    public static ArrayList<User> users = new ArrayList<User>();
+
+    public static ArrayList<Score> scores = new ArrayList<Score>();
 
     static PrintWriter serveroutput =null;
     static BufferedReader serverInput = null;
@@ -45,6 +46,12 @@ public class Server {
                 System.out.println("Waiting for a connection...");
                 System.out.println("Server is listening on port " + portNumber);
 
+                //load game config from file on startup
+                game=Model.loadGameConfigFromFile();
+                //load users from file on startup
+                users =  Model.loadUsersFromFile();
+                //load scores from file on startup
+                scores = Model.loadScoreFromFile();
 
                 //Accepting connection
                 clientSocket = server.accept();
