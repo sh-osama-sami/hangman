@@ -115,10 +115,10 @@ public class UIController extends Thread {
         if (response.contains("won")){
             showGameOptions();
         }
-        if (response.equals("lost")) {
+        if (response.contains("lost")) {
             showGameOptions();
         }
-        if (response.equals("draw")) {
+        if (response.contains("draw")) {
             showGameOptions();
         }
 
