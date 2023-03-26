@@ -22,7 +22,7 @@ public class lookupListener {
             if (lookupserverinput.startsWith("/RANDOM_WORD")) {
                  word = lookupserverinput.split(":")[1];
                 System.out.println("random word from server: " + word);
-                return word;
+                return "gold";
 //                    clientOutput.println("RANDOM_WORD:" + word);
             }
         } catch (IOException e) {

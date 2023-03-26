@@ -95,12 +95,12 @@ public class GameRoom {
     public boolean isGameOver() {
         boolean allUsersHaveNoAttemptsLeft = true;
         for (User user : users) {
-            if (user.getMaxAttempts() >= 1) {
+            if (user.getMaxAttempts() == 0) {
                 allUsersHaveNoAttemptsLeft = false;
                 break;
             }
         }
-        return !maskedPhrase.contains("_") || allUsersHaveNoAttemptsLeft;
+        return !maskedPhrase.contains("_") || !allUsersHaveNoAttemptsLeft;
     }
 
     public String nextTurn() {
@@ -167,6 +167,9 @@ public class GameRoom {
     public User getWinner() {
         ArrayList<User> arrangedUsers =  getUsersOrderedByAttemptsLeft();
         User winner = arrangedUsers.get(0);
+        if (arrangedUsers.get(0).getMaxAttempts() == arrangedUsers.get(1).getMaxAttempts()) {
+            winner = null;
+        }
         return winner;
     }
 

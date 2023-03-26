@@ -271,13 +271,15 @@ public class ClientThread extends Thread {
                         notifyGameRoomMembers(game, "It's a draw and masked word is: " + game.getMaskedPhrase());
                         increaseGameRoomDrawScore(game.getUsers());
                     }
-                    notifyPlayerWithAResult(winner.getUsername(), "You won the game. The masked word is: " + game.getMaskedPhrase());
-                    Score score = winner.getScore();
-                    score.GameRoomWins++;
-                    winner.setScore(score);
-                    Model.updateScore(winner.getScore());
-                    notifyGameRoomMembersExceptPlayer(winner , game ,"You lost the game and masked word is: " + game.getMaskedPhrase()+ " \n" + "The winner is: " + winner.getUsername());
-                    increaseGameRoomLosesScore(game.getUsers(), winner);
+                    else {
+                        notifyPlayerWithAResult(winner.getUsername(), "You won the game. The masked word is: " + game.getMaskedPhrase());
+                        Score score = winner.getScore();
+                        score.GameRoomWins++;
+                        winner.setScore(score);
+                        Model.updateScore(winner.getScore());
+                        notifyGameRoomMembersExceptPlayer(winner, game, "You lost the game and masked word is: " + game.getMaskedPhrase() + " \n" + "The winner is: " + winner.getUsername());
+                        increaseGameRoomLosesScore(game.getUsers(), winner);
+                    }
                     Server.gameRooms.remove(game);
                 } else {
                     notifyGameRoomMembers(game, "Correct guess by: " + game.getCurrentPlayer() + " \nThe word now is: " + game.getMaskedPhrase());
@@ -853,7 +855,7 @@ public class ClientThread extends Thread {
         return "OK";
 
     }
-public static User getUser(String username) {
+    public static User getUser(String username) {
         for (User u : Server.users)
         {
             if (u.getUsername().equals(username))
