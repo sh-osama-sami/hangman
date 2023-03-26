@@ -1,10 +1,8 @@
 package server;
 
 import client.Client;
-import server.model.Game;
-import server.model.Model;
-import server.model.Team;
-import server.model.ThreadIDUserName;
+
+import server.model.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,19 +17,67 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
-    public static ArrayList<ThreadIDUserName> threadIDUserNameList = new ArrayList<>();
+
     public static ArrayList<Game> activeGames = new ArrayList<Game>();
     public static ArrayList<Team> teams = new ArrayList<Team>();
+    public static ArrayList<GameRoom> activeGameRooms = new ArrayList<GameRoom>();
+    public static ArrayList<User> users = new ArrayList<User>();
+    static ArrayList<GameRoom> gameRooms = new ArrayList<>();
 
     static PrintWriter serveroutput =null;
     static BufferedReader serverInput = null;
+
+    static String[] configData = new String[5];
+
+    public static ArrayList<GameRoom> getGameRooms() {
+        return gameRooms;
+    }
+
+    public static void setGameRooms(ArrayList<GameRoom> gameRooms) {
+        Server.gameRooms = gameRooms;
+    }
+
+    public static PrintWriter getServeroutput() {
+        return serveroutput;
+    }
+
+    public static void setServeroutput(PrintWriter serveroutput) {
+        Server.serveroutput = serveroutput;
+    }
+
+    public static BufferedReader getServerInput() {
+        return serverInput;
+    }
+
+    public static void setServerInput(BufferedReader serverInput) {
+        Server.serverInput = serverInput;
+    }
+
+    public static String[] getConfigData() {
+        return configData;
+    }
+
+    public static void setConfigData(String[] configData) {
+        Server.configData = configData;
+    }
+
+    public static ArrayList<Score> getScores() {
+        return scores;
+    }
+
+    public static void setScores(ArrayList<Score> scores) {
+        Server.scores = scores;
+    }
+
+    static ArrayList<Score> scores = new ArrayList<Score>();
 
     public static void main(String[] args) {
 
         int portNumber = 6666;
         int port = 8888;
         try {
-
+            configData = Model.loadGameConfigFromFile();
+            scores = Model.loadAllScoresFromFileToServer();
             ServerSocket server = new ServerSocket(portNumber);
             Socket clientSocket = null;
             if(args.length>0)

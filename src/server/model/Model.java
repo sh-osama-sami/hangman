@@ -132,14 +132,76 @@ public class Model {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(SCORE, true));
-            writer.write( score.getUsername() +  "," + score.singleGameScore +"," + score.multiGameScore +"," + score.totalScore  + "\n");
+            writer.write( score.getUsername() +  "," + score.singleGameScoreWins +"," + score.singleGameScoreLosses +"," + score.singleGameScoreDraws
+                    + "," + score.multiGameScoreWins + "," + score.multiGameScoreLosses + "," + score.multiGameScoreDraws
+                    + "," + score.GameRoomWins + "," + score.GameRoomLosses + "," + score.GameRoomDraws
+                    + "\n");
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public static Score loadUserScoreFromFile(String username) throws IOException {
+    public static void deleteScore(Score score) throws IOException {
+        File file = new File(SCORE);
+        File tempFile = new File("temp_" + SCORE);
+        if (!file.exists()) {
+            return;
+        }
 
+        try (BufferedReader reader = new BufferedReader(new FileReader(file));
+             BufferedWriter writer = new BufferedWriter(new FileWriter(tempFile))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] scoreData = line.split(",");
+                if (!scoreData[0].equals(score.getUsername())) {
+                    writer.write(line);
+                    writer.newLine();
+                }
+            }
+        }
+
+        if (!file.delete()) {
+            throw new IOException("Failed to delete original score file");
+        }
+        if (!tempFile.renameTo(file)) {
+            throw new IOException("Failed to rename temp file to original score file");
+        }
+    }
+
+    public static void updateScore(Score score) throws IOException {
+        deleteScore(score);
+        saveScore(score);
+    }
+
+    public static ArrayList<Score> loadAllScoresFromFileToServer() throws IOException {
+        System.out.println("fileName: " + SCORE);
+        File file = new File(SCORE);
+        System.out.println("file: " + file);
+
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        System.out.println("reader: " + reader  );
+        String line;
+        ArrayList<Score> scores = new ArrayList<>();
+
+        while ((line = reader.readLine()) != null) {
+            System.out.println("line: " + line);
+            String[] socreData = line.split(",");
+            Score score = new Score(socreData[0], Integer.parseInt(socreData[1]), Integer.parseInt(socreData[2]), Integer.parseInt(socreData[3]),
+                    Integer.parseInt(socreData[4]), Integer.parseInt(socreData[5]), Integer.parseInt(socreData[6]),
+                    Integer.parseInt(socreData[7]), Integer.parseInt(socreData[8]), Integer.parseInt(socreData[9]));
+            scores.add(score);
+        }
+
+        reader.close();
+        return scores;
+
+    }
+
+    public static Score loadUserScoreFromFile(String username) throws IOException {
         System.out.println("fileName: " + SCORE  + " username: " + username
         );
         File file = new File(SCORE);
@@ -158,7 +220,9 @@ public class Model {
             System.out.println("line: " + line);
             String[] socreData = line.split(",");
             if (socreData[0].equals(username)) {
-               Score score = new Score(socreData[0],Integer.parseInt(socreData[1]),Integer.parseInt(socreData[2]),Integer.parseInt(socreData[3]));
+                Score score = new Score(socreData[0], Integer.parseInt(socreData[1]), Integer.parseInt(socreData[2]), Integer.parseInt(socreData[3]),
+                        Integer.parseInt(socreData[4]), Integer.parseInt(socreData[5]), Integer.parseInt(socreData[6]),
+                        Integer.parseInt(socreData[7]), Integer.parseInt(socreData[8]), Integer.parseInt(socreData[9]));
                 reader.close();
                 return score;
             }
@@ -168,7 +232,7 @@ public class Model {
         reader.close();
         return null;
     }
-    public static Game loadGameConfigFromFile() throws IOException {
+    public static String[] loadGameConfigFromFile() throws IOException {
 
         File file = new File(GAMECONFIG);
         System.out.println("file: " + file);
@@ -186,10 +250,8 @@ public class Model {
             System.out.println("line: " + line);
             String[] gameData = line.split(",");
 
-
-               Game game = new Game( Integer.parseInt(gameData[0]));
                 reader.close();
-                return game;
+                return gameData;
 
 
         }

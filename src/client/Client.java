@@ -17,7 +17,7 @@ public class Client {
     static Socket communicationSocket = null;
     public static LinkedList<String> onlineLista = new LinkedList<String>();
 
-    public static ArrayList<UiThreadToUsername> uiThreadToUsernameList = new ArrayList<>();
+
 
     private static String playerUsername ="";
 
@@ -118,5 +118,23 @@ public class Client {
 
     public static void sendGuessToServerMultiplayer(String valueOf, String usernameToValidate) {
         serverOutput.println("/GUESS_MULTIPLAYER"+ ":" + valueOf + ":" + usernameToValidate);
+    }
+
+    public static void getConfigData() {
+        serverOutput.println("/GET_CONFIG_DATA");
+    }
+
+    public static void sendScoreHistoryRequest(String username) {
+
+        serverOutput.println("/SCORE_HISTORY:" + username);
+    }
+
+    public static void sendGameRoomSizeToServer(String choice) {
+        serverOutput.println("/GAME_ROOM_SIZE:" + choice + ":" + getUsername());
+    }
+
+    public static void sendGuessToServerGameRoom(String valueOf, String usernameToValidate) {
+        System.out.println("from client guess game room");
+        serverOutput.println("/GUESS_GAMEROOM"+ ":" + valueOf + ":" + usernameToValidate);
     }
 }

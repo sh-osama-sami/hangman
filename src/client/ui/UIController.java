@@ -1,7 +1,6 @@
 package client.ui;
 
 import client.Client;
-import client.UiThreadToUsername;
 
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -9,10 +8,24 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UIController extends Thread {
     static String usernameToValidate = "";
+    static int maxTeamSize ;
+
+    static int minTeamSize ;
+
+    static int minGameSize ;
+
+    static int maxGameSize ;
     public static boolean giving = true;
-    public static ConcurrentHashMap<Long, UIController> threadInstances = new ConcurrentHashMap<>();
+
 
      static String teamNameToValidate = "";
+
+
+     private static void getConfigData() {
+         Client.getConfigData();
+
+     }
+
 
 
     public static void handleStartSinglePlayerGameResponse(String response) {
@@ -97,19 +110,19 @@ public class UIController extends Thread {
         }
     }
 
-    public static void handleMaskedWordResponse(String response) {
-        System.out.println("response from masked word: " + response);
-        if(response.startsWith("WON"))
-        {
-            System.out.println("You won!");
-            showGameOptions();
-        }
-        if (response.startsWith("LOST")) {
-            System.out.println("You lost!");
-            showGameOptions();
-        }
-        System.out.println("Masked word notification: " + response);
-    }
+//    public static void handleMaskedWordResponse(String response) {
+//        System.out.println("response from masked word: " + response);
+//        if(response.startsWith("WON"))
+//        {
+//            System.out.println("You won!");
+//            showGameOptions();
+//        }
+//        if (response.startsWith("LOST")) {
+//            System.out.println("You lost!");
+//            showGameOptions();
+//        }
+//        System.out.println("Masked word notification: " + response);
+//    }
 
     public static void handleNotifyPlayer(String response) {
         if (response.contains("won")){
@@ -121,14 +134,45 @@ public class UIController extends Thread {
         if (response.contains("draw")) {
             showGameOptions();
         }
+        if (response.contains("guess") || response.contains("turn")) {
+            guessCharacterGameRoomMenu();
+        }
+        if (response.contains("game mode")) {
+            showGameOptions();
+        }
 
     }
 
-    public void run() {
-        threadInstances.put(getId(), this);
+    private static void guessCharacterGameRoomMenu() {
         Scanner sc = new Scanner(System.in);
+        while (true) {
+            System.out.println("Guess a character: ");
+            String guess = sc.nextLine();
+            if (guess.length() == 1 && !guess.equals("-")) {
+                char guessedChar = guess.charAt(0);
+                Client.sendGuessToServerGameRoom(String.valueOf(guessedChar), usernameToValidate);
+                break;
+            }else if (guess.equals("-")) {
+                Client.sendQuitTheGameSignal();
+            }
+            else {
+                System.out.println("Invalid guess. Please enter a single character.");
+            }
+        }
+    }
 
-           signupOrLogin();
+    public static void  handleMaxAttemptsResponse(char maxAttempts, char minTeamSize2, char maxTeamSize2, char minGameRoomSize, char maxGameRoomSize) {
+         maxGameSize = Integer.parseInt(String.valueOf(maxGameRoomSize));
+         minGameSize = Integer.parseInt(String.valueOf(minGameRoomSize));
+         maxTeamSize = Integer.parseInt(String.valueOf(maxTeamSize2));
+         minTeamSize = Integer.parseInt(String.valueOf(minTeamSize2));
+    }
+
+    public void run() {
+         Scanner sc = new Scanner(System.in);
+        getConfigData();
+        signupOrLogin();
+
 
 
     }
@@ -186,6 +230,8 @@ public class UIController extends Thread {
             System.out.println("Choose game mode:");
             System.out.println("1. Single Player");
             System.out.println("2. Multiplayer");
+            System.out.println("3. Game Room");
+            System.out.println("4. View score history");
             String choice = sc.nextLine();
 
             if (choice.equals("1")) {
@@ -197,10 +243,41 @@ public class UIController extends Thread {
             }else if (choice.equals("-")) {
                 Client.sendExitSignal();
             }
+            else if (choice.equals("3")) {
+                showGameRoomOptions(sc);
+                break;
+            }
+            else if (choice.equals("4")) {
+                showScoreHistory();
+                break;
+            }
             else {
                 System.out.println("Invalid choice. Please enter 1 or 2.");
             }
         }
+    }
+
+    private static void showGameRoomOptions(Scanner sc) {
+        while (true) {
+            System.out.println("Choose game room size:");
+            System.out.println("Between " + minGameSize + " - " + maxGameSize + "and wait for other players to join the game room.");
+            String choice = sc.nextLine();
+            if (choice.equals("-")) {
+                Client.sendExitSignal();
+            }
+            else if (Integer.parseInt(choice) >= minGameSize && Integer.parseInt(choice) <= maxGameSize) {
+                Client.sendGameRoomSizeToServer(choice);
+                break;
+            }
+            else {
+                System.out.println("Invalid choice. Please enter a number between " + minGameSize + " - " + maxGameSize );
+            }
+        }
+    }
+
+    private static void showScoreHistory() {
+        Client.sendScoreHistoryRequest(usernameToValidate);
+//        showGameOptions();
     }
 
     private static void showMultiplayerOptions(Scanner sc) {
@@ -263,7 +340,7 @@ public class UIController extends Thread {
             signupOrLogin();
         } else {
             Client.setUsername(usernameToValidate);
-            Client.uiThreadToUsernameList.add(new UiThreadToUsername(currentThread().getId(), usernameToValidate));
+
             System.out.println("signed up successfully");
             showGameOptions();
 
@@ -283,8 +360,6 @@ public class UIController extends Thread {
         } else {
             System.out.println("Logged in successfully");
             Client.setUsername(usernameToValidate);
-            Client.uiThreadToUsernameList.add(new UiThreadToUsername(currentThread().getId(), usernameToValidate));
-            System.out.println("thread id: " + currentThread().getId());
             showGameOptions();
         }
     }

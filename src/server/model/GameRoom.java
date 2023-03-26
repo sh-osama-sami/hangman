@@ -1,16 +1,56 @@
 package server.model;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GameRoom {
-    private List<User> users;
+    private ArrayList<User> users = new ArrayList<>();
+    private int gameRoomSize;
     private String phrase;
     private String maskedPhrase;
+
+    public void setUsers(ArrayList<User> users) {
+        this.users = users;
+    }
+
+    public int getGameRoomSize() {
+        return gameRoomSize;
+    }
+
+    public void setGameRoomSize(int gameRoomSize) {
+        this.gameRoomSize = gameRoomSize;
+    }
+
+    public String getPhrase() {
+        return phrase;
+    }
+
+    public void setMaskedPhrase(String maskedPhrase) {
+        this.maskedPhrase = maskedPhrase;
+    }
+
+    public int getCurrentPlayerIndex() {
+        return currentPlayerIndex;
+    }
+
+    public void setCurrentPlayerIndex(int currentPlayerIndex) {
+        this.currentPlayerIndex = currentPlayerIndex;
+    }
+
+    public int getMaxAttempts() {
+        return maxAttempts;
+    }
+
+    public void setMaxAttempts(int maxAttempts) {
+        this.maxAttempts = maxAttempts;
+    }
+
     private int currentPlayerIndex;
     private int maxAttempts;
 
-    public GameRoom(int maxAttempts) {
+    public GameRoom( int gameRoomSize, int maxAttempts) {
+        this.gameRoomSize = gameRoomSize;
         this.users = new ArrayList<>();
         this.maxAttempts = maxAttempts;
         initializePlayerIndex();
@@ -65,6 +105,7 @@ public class GameRoom {
 
     public String nextTurn() {
         currentPlayerIndex = (currentPlayerIndex + 1) % users.size();
+        System.out.println("current player index: " + currentPlayerIndex);
         return getCurrentPlayer();
     }
 
@@ -95,8 +136,8 @@ public class GameRoom {
 //
 //        return winner;
 //    }
-    public List<User> getUsersOrderedByAttemptsLeft() {
-        List<User> usersOrderedByAttemptsLeft = new ArrayList<>(users);
+    public ArrayList<User> getUsersOrderedByAttemptsLeft() {
+        ArrayList<User> usersOrderedByAttemptsLeft = new ArrayList<>(users);
 
         for (int i = 0; i < usersOrderedByAttemptsLeft.size() - 1; i++) {
             for (int j = 0; j < usersOrderedByAttemptsLeft.size() - i - 1; j++) {
@@ -113,4 +154,23 @@ public class GameRoom {
         return usersOrderedByAttemptsLeft;
     }
 
+    public void addPlayerToGameRoom(User user) {
+        users.add(user);
+
+
+    }
+
+    public ArrayList<User> getPlayers() {
+        return (ArrayList<User>) users;
+    }
+
+    public User getWinner() {
+        ArrayList<User> arrangedUsers =  getUsersOrderedByAttemptsLeft();
+        User winner = arrangedUsers.get(0);
+        return winner;
+    }
+
+    public String getAttemptsLeft() {
+        return String.valueOf(users.get(currentPlayerIndex).getMaxAttempts());
+    }
 }

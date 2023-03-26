@@ -74,22 +74,36 @@ public class ListenerThread extends Thread{
                     UIController.handleGameStartedResponse(response);
                     
                 }
-                else if (input.startsWith("Match result:"))
+                else if (input.startsWith(" "))
                 {
-                    response = input.split(":")[1];
-                    UIController.handleNotifyPlayer(response);
+
+                    UIController.handleNotifyPlayer(input);
                 }
                 else if(input.startsWith("/YOUR_TURN"))
                 {
                     response = input.split(":")[1];
                     UIController.handleYourTurnResponse(response);
-                } else if (input.startsWith("/MASKED_WORD")) {
-                    response = input.split(":")[1];
-                    UIController.handleMaskedWordResponse(response);
                 }
+//                else if (input.startsWith("/MASKED_WORD")) {
+//                    response = input.split(":")[1];
+//                    UIController.handleMaskedWordResponse(response);
+//                }
                 else if(input.startsWith("/QUIT_SENT")){
                     String name=input.split(":")[1];
                     UIController.receiveQuitTheGameSignal(name);
+                }
+                else if (input.startsWith("MaxAttempts")){
+                    String maxAttempts=input.split(":")[1];
+                    char maxAttemptsChar=maxAttempts.charAt(0);
+                    String minTeamSize=input.split(":")[2];
+                    char minTeamSizeChar=minTeamSize.charAt(0);
+                    String maxTeamSize=input.split(":")[3];
+                    char maxTeamSizeChar=maxTeamSize.charAt(0);
+                    String minGameRoomSize=input.split(":")[4];
+                    char minGameRoomSizeChar=minGameRoomSize.charAt(0);
+                    String maxGameRoomSize=input.split(":")[5];
+                    char maxGameRoomSizeChar=maxGameRoomSize.charAt(0);
+                    UIController.handleMaxAttemptsResponse(maxAttemptsChar,minTeamSizeChar,maxTeamSizeChar,minGameRoomSizeChar,maxGameRoomSizeChar);
                 }
                 else
                     continue;

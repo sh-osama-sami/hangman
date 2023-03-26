@@ -6,6 +6,7 @@ import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,11 +33,11 @@ public class ClientThread extends Thread {
 
     //Client username
     String username = "";
-    ThreadIDUserName threadIDUserName ;
+    int maxAtemps = Integer.parseInt(Server.configData[0]);
+
     static HashMap<Socket, String> clients = new HashMap<>();
     static  HashMap<String, String> team1Vsteam2 = new HashMap<>();
     static HashMap<Socket, String> socketUsernameMap = new HashMap<>();
-    static ConcurrentHashMap<String, Boolean> readyTeams = new ConcurrentHashMap<>();
 
     static ArrayList<String> teamNamesReady = new ArrayList<>();
 
@@ -52,6 +53,20 @@ public class ClientThread extends Thread {
             lookupListener listener = new lookupListener(serverInput);
             while (true) {
                 String input = clientInput.readLine();
+                if (input.startsWith("/GET_CONFIG_DATA"))
+                {
+                    String response = getConfigData();
+                    clientOutput.println(response);
+
+                }
+                if (input.startsWith("/SCORE_HISTORY:"))
+                {
+                    String username = input.split(":")[1];
+                    System.out.println("Username from if con: "+username);
+                    getScoreHistory(username);
+
+
+                }
 
                 //Exiting app signal received
                 if(input.equals("/EXIT")) {
@@ -98,7 +113,7 @@ public class ClientThread extends Thread {
                     String response = signup(name,username, pass);
                     clientOutput.println("/USERNAME:" + response);
                     if (response.equals("OK")) {
-                        threadIDUserName = new ThreadIDUserName(threadId,username);
+
                         System.out.println(username + " has joined.");
                         socketUsernameMap.put(communicationSocket, username);
                     }
@@ -191,14 +206,29 @@ public class ClientThread extends Thread {
                     Game game = findGameByUsername(player);
                     Team team = findTeamByUsername(player);
                     System.out.println("player from the if condition: " + player);
-                    String response = guessMultiplayer(game,guess , team);
-//                    clientOutput.println("/GUESS_MULTIPLAYER:" + response);
-//                    if (response.equals("CORRECT")) {
-//                        System.out.println(guess + " has been guessed.");
-//                    } else if ( response.equals("WRONG")) {
-//                        System.out.println(guess + " has been guessed.");
-//                    }
-
+                    guessMultiplayer(game,guess , team);
+//
+                }
+                if (input.startsWith("/GAME_ROOM_SIZE:"))
+                {
+                    Server.sendRandomWordRequest();
+                    String word =listener.getWordFromServer();
+                    int gameRoomSize = Integer.parseInt(input.split(":")[1]);
+                    String username = input.split(":")[2];
+                    String res = joinGameRoom(gameRoomSize, username,word);
+                    if (res.equals("NEW"))
+                    {
+                        notifyPlayerWithAResult( username ,"game room isn't full, wait for other players to join");
+                    }
+                }
+                if (input.startsWith("/GUESS_GAMEROOM"))
+                {
+                    String guess = input.split(":")[1];
+                    String username = input.split(":")[2];
+                    System.out.println("game room from client thread: " + game);
+                    GameRoom game = findGameRoomByUsername(username);
+                    System.out.println("game room2 from client thread: " + game);
+                    guessGameRoom(guess, game);
                 }
 
 
@@ -212,6 +242,192 @@ public class ClientThread extends Thread {
             return;
         }
 
+    }
+
+    private GameRoom findGameRoomByUsername(String username) {
+        for (GameRoom gameRoom : Server.gameRooms) {
+            for (User user : gameRoom.getUsers()) {
+                if (user.getUsername().equals(username))
+                    return gameRoom;
+            }
+        }
+        return null;
+    }
+
+    private void guessGameRoom(String guess, GameRoom game) throws IOException {
+        System.out.println("guess from guessGameRoom: " + guess);
+        char guessedChar = guess.charAt(0);
+        if (game != null) {
+            if (game.guessCharacter(guessedChar)) {
+                if (game.isGameOver()) {
+                    notifyGameRoomMembers(game, "Game over. " );
+                    User winner = game.getWinner();
+                    if (winner == null) {
+                        notifyGameRoomMembers(game, "It's a draw and masked word is: " + game.getMaskedPhrase());
+                        increaseGameRoomDrawScore(game.getUsers());
+                    }
+                    notifyPlayerWithAResult(winner.getUsername(), "You won the game. The masked word is: " + game.getMaskedPhrase());
+                    Score score = winner.getScore();
+                    score.GameRoomWins++;
+                    winner.setScore(score);
+                    Model.updateScore(winner.getScore());
+                    notifyGameRoomMembersExceptPlayer(winner , game ,"You lost the game and masked word is: " + game.getMaskedPhrase()+ " \n" + "The winner is: " + winner.getUsername());
+                    increaseGameRoomLosesScore(game.getUsers(), winner);
+                    Server.gameRooms.remove(game);
+                } else {
+                    notifyGameRoomMembers(game, "Correct guess by: " + game.getCurrentPlayer() + " \nThe word now is: " + game.getMaskedPhrase());
+                    String nextPlayer = nextGameRoomTurn(game);
+                    notifyPlayerWithAMessage(nextPlayer, "Your turn to guess"+ "left attempts: " + game.getAttemptsLeft());
+                    notifyPlayerWithAResult(nextPlayer, "Your turn to guess");
+
+                }
+            } else {
+                notifyGameRoomMembers(game, "Wrong guess by: " + game.getCurrentPlayer() + " \nThe word now is: " + game.getMaskedPhrase());
+                String nextPlayer = nextGameRoomTurn(game);
+                notifyPlayerWithAMessage(nextPlayer, "Your turn to guess"+ "left attempts: " + game.getAttemptsLeft());
+                notifyPlayerWithAResult(nextPlayer, "Your turn to guess");
+
+            }
+        }
+    }
+
+    private void increaseGameRoomDrawScore(List<User> users) {
+        for (User user : users) {
+            Score score = user.getScore();
+            score.GameRoomDraws++;
+            user.setScore(score);
+            try {
+                Model.updateScore(user.getScore());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void increaseGameRoomLosesScore(List<User> users, User winner) throws IOException {
+        for (User user : users) {
+            if (!user.getUsername().equals(winner.getUsername())) {
+                Score score = user.getScore();
+                score.GameRoomLosses++;
+                user.setScore(score);
+                Model.updateScore(user.getScore());
+            }
+        }
+    }
+
+    private void notifyGameRoomMembers(GameRoom game, String s) {
+        for (User user : game.getPlayers()) {
+            notifyPlayerWithAMessage(user.getUsername(), s);
+        }
+    }
+    private void notifyGameRoomMembersExceptPlayer(User player, GameRoom game, String s) {
+        for (User user : game.getPlayers()) {
+            if (!user.getUsername().equals(player.getUsername())) {
+                notifyPlayerWithAResult(user.getUsername(), s);
+            }
+        }
+    }
+
+    private String joinGameRoom(int gameRoomSize , String username , String word) throws IOException {
+        if(Server.gameRooms.size() == 0)
+        {
+            GameRoom gameRoom = new GameRoom(gameRoomSize,maxAtemps);
+            gameRoom.setPhrase(word);
+//            User u = Model.loadUserFromFile(username);
+            User u = null;
+            for (User user : Server.users) {
+                if (user.getUsername().equals(username))
+                    u = user;
+            }
+            gameRoom.addPlayerToGameRoom(u);
+            Server.gameRooms.add(gameRoom);
+            System.out.println("player "+u.getName() +" added to game room");
+        }
+        else
+        {
+            for (GameRoom game : Server.gameRooms) {
+                if (game.getGameRoomSize() == gameRoomSize) {
+                    User u = null;
+                    for (User user : Server.users) {
+                        if (user.getUsername().equals(username))
+                            u = user;
+                    }
+                    game.addPlayerToGameRoom(u);
+                    System.out.println("player "+u.getName() +" added to game room");
+                    if (game.getGameRoomSize() == game.getPlayers().size()) {
+                        notifyGameRoomMembers(game,"game room is full and ready, wait for your turn");
+                        startGameRoom(game, word);
+                    }
+                    break;
+                }
+                else
+                {
+                    GameRoom gameRoom = new GameRoom(gameRoomSize,maxAtemps);
+//                    User u = Model.loadUserFromFile(username);
+                    for (User user : game.getPlayers()) {
+                        gameRoom.addPlayerToGameRoom(user);
+                    }
+//                    gameRoom.addPlayerToGameRoom(u);
+                    Server.gameRooms.add(gameRoom);
+                    notifyPlayerWithAMessage( username ,"game room isn't full, wait for other players to join");
+
+                    System.out.println("player  added to game room");
+                    return "NEW";
+
+                }
+            }
+        }
+        return "EXIST";
+
+    }
+
+    private void startGameRoom(GameRoom game, String word) {
+        game.setPhrase(word);
+        for (User user : game.getPlayers()) {
+            notifyPlayerWithAMessage(user.getName(),"Game room Started and masked word is: "+game.getMaskedPhrase());
+        }
+        Server.activeGameRooms.add(game);
+            String nextPlayer = getCurrentPlayerGameRoom(game);
+            notifyPlayerWithAResult(nextPlayer,"It's your turn to guess");
+
+
+    }
+
+    private String getCurrentPlayerGameRoom(GameRoom game) {
+        if (game != null) {
+            return game.getCurrentPlayer();
+        }
+        return null;
+    }
+
+
+    private void getScoreHistory(String username) {
+        System.out.println("get score history from client thread " + username);
+        for (int i = 0; i < Server.scores.size(); i++) {
+            if (Server.scores.get(i).getUsername().equals(username)) {
+                notifyPlayerWithAMessage(username,"Single Game Wins: " + Server.scores.get(i).singleGameScoreWins);
+                notifyPlayerWithAMessage(username,"Single Game Losses: " + Server.scores.get(i).singleGameScoreLosses);
+                notifyPlayerWithAMessage(username,"Single Game Draws: " + Server.scores.get(i).singleGameScoreDraws);
+                notifyPlayerWithAMessage(username,"Multi Game Wins: " + Server.scores.get(i).multiGameScoreWins);
+                notifyPlayerWithAMessage(username,"Multi Game Losses: " + Server.scores.get(i).multiGameScoreLosses);
+                notifyPlayerWithAMessage(username,"Multi Game Draws: " + Server.scores.get(i).multiGameScoreDraws);
+                notifyPlayerWithAMessage(username, "Game Room Wins: " + Server.scores.get(i).GameRoomWins);
+                notifyPlayerWithAMessage(username, "Game Room Losses: " + Server.scores.get(i).GameRoomLosses);
+                notifyPlayerWithAMessage(username, "Game Room Draws: " + Server.scores.get(i).GameRoomDraws);
+            }
+        }
+        notifyPlayerWithAResult(username,"back to game mode menu");
+    }
+
+    private String getConfigData() {
+        String[] configData ;
+        try {
+            configData = Server.configData;
+            return  "MaxAttempts:"+configData[0] + " Min Team Size:" + configData[1] + " MAx Team:" + configData[2] + " Min Game room size:" + configData[3] + " Max Game Room size:" + configData[4];
+        }
+        catch (Exception e) {
+            return "FAIL";
+        }
     }
 
     private String joinGame(String team , String word ) {
@@ -310,10 +526,19 @@ public class ClientThread extends Thread {
         System.out.println("notify player message: " + currentPlayerUsername);
         ClientThread currentPlayerThread = findClientThreadByUsername(currentPlayerUsername);
         if (currentPlayerThread != null) {
-            currentPlayerThread.clientOutput.println("Match result:" + message);
+            currentPlayerThread.clientOutput.println( " " + message);
         }
 
     }
+    private void notifyPlayerWithAMessage(String currentPlayerUsername , String message) {
+        ClientThread currentPlayerThread = findClientThreadByUsername(currentPlayerUsername);
+        if (currentPlayerThread != null) {
+            currentPlayerThread.clientOutput.println(message);
+        }
+
+    }
+
+
 
     private Game findGameByUsername(String username) {
         Team userTeam = null;
@@ -405,8 +630,8 @@ public class ClientThread extends Thread {
                     notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Game over. " );
                     Team WonTeam = game.checkWonTeam();
                     if (WonTeam == null) {
-                        notifyPlayerWithAResult(team.getPlayers().get(0).getUsername(), "DRAW:" + game.getMaskedPhrase());
-                        notifyPlayerWithAResult(team.getPlayers().get(1).getUsername(), "DRAW:" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(team.getPlayers().get(0).getUsername(), "It's a draw:" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(team.getPlayers().get(1).getUsername(), "It's a draw:" + game.getMaskedPhrase());
                         notifyPlayerWithAResult(getOpponentTeam(team, game).getPlayers().get(0).getUsername(), "It's a draw" + game.getMaskedPhrase());
                         notifyPlayerWithAResult(getOpponentTeam(team, game).getPlayers().get(1).getUsername(), "It's a draw" + game.getMaskedPhrase());
                         return "DRAW:" + game.getMaskedPhrase();
@@ -445,6 +670,14 @@ public class ClientThread extends Thread {
         return null;
     }
 
+    private String nextGameRoomTurn(GameRoom game) {
+        System.out.println("next turn from server");
+        if (game != null) {
+            return  game.nextTurn();
+        }
+        return null;
+    }
+
     private String getCurrentPlayer(Game game) {
         if (game != null) {
             return game.getCurrentPlayer();
@@ -457,13 +690,23 @@ public class ClientThread extends Thread {
         try {
             Team team = new Team(teamName);
             System.out.println("team created from Client thread: " + teamName);
-            User u = Model.loadUserFromFile(userName);
-            team.addPlayer(u);
-            System.out.println(team.getPlayers().get(0).getName());
-            System.out.println("player"+u.getName()+ "added to team: " + teamName);
-            System.out.println("team players: " + team.playersToString());
-            teams.add(team);
-            return "OK";
+            for(User u : Server.users)
+            {
+                if (u.getUsername().equals(userName))
+                {
+                    team.addPlayer(u);
+                    System.out.println("player"+u.getName()+ "added to team: " + teamName);
+                    System.out.println("team players: " + team.playersToString());
+                    teams.add(team);
+                    return "OK";
+                }
+            }
+//            team.addPlayer(u);
+//            System.out.println(team.getPlayers().get(0).getName());
+//            System.out.println("player"+u.getName()+ "added to team: " + teamName);
+//            System.out.println("team players: " + team.playersToString());
+//            teams.add(team);
+//            return "OK";
         }
         catch (Exception e) {
             System.out.println("team not created from Client thread: " + teamName);
@@ -476,20 +719,20 @@ public class ClientThread extends Thread {
 
         for (Team team : teams) {
             if (team.getName().equals(teamName)) {
-                User u = Model.loadUserFromFile(userName);
-                for (int i = 0; i < team.getPlayers().size(); i++) {
-                    if (team.getPlayers().get(i).getUsername().equals(userName)) {
-                        return "NOT_OK_DUPLICATE";
+                for (User u : Server.users)
+                {
+                    if (u.getUsername().equals(userName))
+                    {
+                        for (int i = 0; i < team.getPlayers().size(); i++) {
+                            if (team.getPlayers().get(i).getUsername().equals(userName)) {
+                                return "NOT_OK_DUPLICATE";
+                            }
+                        }
+                        team.addPlayer(u);
+                        return "OK";
                     }
                 }
-              team.addPlayer(u);
-                return "OK";
 
-//                System.out.println(team.getPlayers().get(1).getName());
-//                System.out.println("player"+u.getName()+ "added to team: " + teamName);
-//                System.out.println("team players: " + team.playersToString());
-
-//                return "OK";
             }
         }
            return "NOT_OK";
@@ -529,22 +772,27 @@ public class ClientThread extends Thread {
             User user = new User(name,username,pass);
             Model.saveUser(user);
             Server.onlineUsers.add(this);
-            ThreadIDUserName t = new ThreadIDUserName(getId(),username);
-            Server.threadIDUserNameList.add(t);
+            Score score = new Score(username);
+            Model.saveScore(score);
             return "OK";
         }
         else return "NOT_OK";
     }
     private String login (String username ,String pass) throws IOException {
-        System.out.println("from login" + username + " " + pass);
         User u = Model.loadUserFromFile(username);
 //        System.out.println("from login" + u.getUsername() + " " + u.getPassword());
         if (Model.loadUserFromFile(username)!=null) {
             if (u.getPassword().equals(pass)) {
                 this.username = username;
                 Server.onlineUsers.add(this);
-                ThreadIDUserName t = new ThreadIDUserName(getId(),username);
-                Server.threadIDUserNameList.add(t);
+                Server.users.add(u);
+                for (Score score : Server.scores){
+                    System.out.println( "score for user "+score.getUsername() + " is " + score.GameRoomLosses);
+                    if (score.getUsername().equals(username)){
+                        u.setScore(score);
+                        System.out.println("score for user inside if "+u.getUsername() + " is " + u.getScore().GameRoomLosses);
+                    }
+                }
                 return "OK";
             }
             else return "401";
