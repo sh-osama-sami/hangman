@@ -13,7 +13,6 @@ public class UIController extends Thread {
     static int minGameSize ;
 
     static int maxGameSize ;
-    public static boolean giving = true;
 
 
      static String teamNameToValidate = "";
@@ -27,8 +26,7 @@ public class UIController extends Thread {
 
 
     public static void handleStartSinglePlayerGameResponse(String response) {
-        if (response.equals("OK")) {
-            System.out.println("Starting single player game...");
+        if (response.contains("Starting")) {
             guessCharacterMenu();
 
         } else {
@@ -237,13 +235,14 @@ public class UIController extends Thread {
     private static void showGameRoomOptions(Scanner sc) {
         while (true) {
             System.out.println("Choose game room size:");
-            System.out.println("Between " + minGameSize + " - " + maxGameSize + "and wait for other players to join the game room.");
+            System.out.println("Between " + minGameSize + " - " + maxGameSize );
             String choice = sc.nextLine();
             if (choice.equals("-")) {
                 Client.sendExitSignal();
             }
             else if (Integer.parseInt(choice) >= minGameSize && Integer.parseInt(choice) <= maxGameSize) {
                 Client.sendGameRoomSizeToServer(choice);
+                System.out.println("Waiting for other players to join the game room...");
                 break;
             }
             else {
@@ -394,9 +393,7 @@ public class UIController extends Thread {
         }
     }
 
-    //Recieve the message when your opponent has left the game
     public static void receiveQuitTheGameSignal(String name) {
-
         System.out.println("player " + name + " has quit the game");
         showMultiplayerOptions(new Scanner(System.in));
 
@@ -406,7 +403,6 @@ public class UIController extends Thread {
 
         Client.sendStartSinglePlayerGameRequest();
 
-        // Update the UI with the initial game state
     }
 
     public static void handleTeamStateResponse(String response){
@@ -419,8 +415,7 @@ public class UIController extends Thread {
             System.out.println("Error checking team state");
         }
     }
-    private static void updateSinglePlayerUI() {
-    }
+
 
 
 }

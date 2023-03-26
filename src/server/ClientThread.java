@@ -86,24 +86,6 @@ public class ClientThread extends Thread {
                     String name=input.split(":")[1];
                     forwardQuitSignal(name);
                     Server.onlineUsers.remove(this);
-
-//                    String senderTeam = clients.get(this.communicationSocket);
-//                    String clientname = socketUsernameMap.get(this.communicationSocket);
-//                    String receiverTeam = team1Vsteam2.get(senderTeam);
-//                    for (Map.Entry<Socket, String> entry : clients.entrySet()) {
-//                        if (entry.getValue().equals(senderTeam)) {
-//                            Socket receiverSocket = entry.getKey();
-//                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-//                            out.println("/QUIT_SENT:"+clientname);
-//                        }
-//                        if (entry.getValue().equals(receiverTeam)) {
-//                            Socket receiverSocket = entry.getKey();
-//                            PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-//                            out.println("/QUIT_SENT:"+clientname);
-//                        }
-//                    }
-
-                    //System.out.println("broadcast");
                 }
 
                 //Username validation
@@ -163,13 +145,8 @@ public class ClientThread extends Thread {
                     String username = input.split(":")[1];
                     String response = startSinglePlayerGame(word,username);
 
-                    System.out.println("response from start single player game: " + response);
-                    clientOutput.println("/START_SINGLE_PLAYER_GAME:" + response);
-                    if (response.equals("OK")) {
+                    clientOutput.println(response);
 
-
-                        System.out.println( "A single player game.");
-                    }
                 }
                 if (input.startsWith("/GUESS:")){
                     String guess = input.split(":")[1];
@@ -197,7 +174,6 @@ public class ClientThread extends Thread {
 //                            clientOutput.println("/CHECK_FOR_TEAM_STATE:" + response);
                         }
                     }
-                   // clientOutput.println("/CHECK_FOR_TEAM_STATE:" + response);
                     if (response.equals("OK")) {
                         System.out.println( "A team is ready.");
 
@@ -268,7 +244,8 @@ public class ClientThread extends Thread {
                     notifyGameRoomMembers(game, "Game over. " );
                     User winner = game.getWinner();
                     if (winner == null) {
-                        notifyGameRoomMembers(game, "It's a draw and masked word is: " + game.getMaskedPhrase());
+                        for (User user : game.getUsers()) {
+                            notifyPlayerWithAResult(user.getUsername(), "It's a draw and masked word was: "+ game.getPhrase());              }
                         increaseGameRoomDrawScore(game.getUsers());
                     }
                     else {
@@ -277,18 +254,42 @@ public class ClientThread extends Thread {
                         score.GameRoomWins++;
                         winner.setScore(score);
                         Model.updateScore(winner.getScore());
-                        notifyGameRoomMembersExceptPlayer(winner, game, "You lost the game and masked word is: " + game.getMaskedPhrase() + " \n" + "The winner is: " + winner.getUsername());
+                        notifyGameRoomMembersExceptPlayer(winner, game, "You lost the game and masked word is: " + game.getPhrase()  + " The winner is: " + winner.getUsername());
                         increaseGameRoomLosesScore(game.getUsers(), winner);
                     }
                     Server.gameRooms.remove(game);
                 } else {
-                    notifyGameRoomMembers(game, "Correct guess by: " + game.getCurrentPlayer() + " \nThe word now is: " + game.getMaskedPhrase());
+                    notifyGameRoomMembers(game, "Correct guess by: " + game.getCurrentPlayer() + " The word now is: " + game.getMaskedPhrase());
                     String nextPlayer = nextGameRoomTurn(game);
                     notifyPlayerWithAMessage(nextPlayer, "Your turn to guess"+ "left attempts: " + game.getAttemptsLeft());
                     notifyPlayerWithAResult(nextPlayer, "Your turn to guess");
 
                 }
-            } else {
+            }
+            else
+            {
+                if (game.isGameOver()) {
+                    notifyGameRoomMembers(game, "Game over. " );
+                    User winner = game.getWinner();
+                    if (winner == null) {
+                        for (User user : game.getUsers()) {
+                            notifyPlayerWithAResult(user.getUsername(), "It's a draw and masked word was: "+ game.getPhrase());              }
+                        increaseGameRoomDrawScore(game.getUsers());
+                    }
+                    else {
+                        notifyPlayerWithAResult(winner.getUsername(), "You won the game. The masked word is: " + game.getMaskedPhrase());
+                        Score score = winner.getScore();
+                        score.GameRoomWins++;
+                        winner.setScore(score);
+                        Model.updateScore(winner.getScore());
+                        notifyGameRoomMembersExceptPlayer(winner, game, "You lost the game and masked word is: " + game.getPhrase() + " The winner is: " + winner.getUsername());
+                        increaseGameRoomLosesScore(game.getUsers(), winner);
+                    }
+                    Server.gameRooms.remove(game);
+            }
+            else
+            {
+
                 notifyGameRoomMembers(game, "Wrong guess by: " + game.getCurrentPlayer() + " \nThe word now is: " + game.getMaskedPhrase());
                 String nextPlayer = nextGameRoomTurn(game);
                 notifyPlayerWithAMessage(nextPlayer, "Your turn to guess"+ "left attempts: " + game.getAttemptsLeft());
@@ -296,6 +297,7 @@ public class ClientThread extends Thread {
 
             }
         }
+    }
     }
 
     private void increaseGameRoomDrawScore(List<User> users) {
@@ -362,7 +364,7 @@ public class ClientThread extends Thread {
                     game.addPlayerToGameRoom(u);
                     System.out.println("player "+u.getName() +" added to game room");
                     if (game.getGameRoomSize() == game.getPlayers().size()) {
-                        notifyGameRoomMembers(game,"game room is full and ready, wait for your turn");
+                        notifyGameRoomMembers(game," game room is full and ready, wait for your turn");
                         startGameRoom(game, word);
                     }
                     break;
@@ -376,7 +378,7 @@ public class ClientThread extends Thread {
                     }
 //                    gameRoom.addPlayerToGameRoom(u);
                     Server.gameRooms.add(gameRoom);
-                    notifyPlayerWithAMessage( username ,"game room isn't full, wait for other players to join");
+                    notifyPlayerWithAMessage( username ," game room isn't full, wait for other players to join");
 
                     System.out.println("player  added to game room");
                     return "NEW";
@@ -395,7 +397,7 @@ public class ClientThread extends Thread {
         }
         Server.activeGameRooms.add(game);
             String nextPlayer = getCurrentPlayerGameRoom(game);
-            notifyPlayerWithAResult(nextPlayer,"It's your turn to guess");
+            notifyPlayerWithAResult(nextPlayer,"It's your turn to guess" + "left attempts: " + game.getAttemptsLeft());
 
 
     }
@@ -448,7 +450,7 @@ public class ClientThread extends Thread {
         }
         for (Team t : Server.teamReady) {
             if (t.getTeamSize() == currentTeam.getTeamSize() && !t.getName().equals(team)){
-                team1Vsteam2.put(team,t.getName());
+                team1Vsteam2.put(t.getName(),team);
                 System.out.println("in making a game");
                 Server.teamReady.remove(t);
                 Server.teamReady.remove(currentTeam);
@@ -489,22 +491,18 @@ public class ClientThread extends Thread {
             System.out.println("active games size: " + Server.activeGames.size());
             System.out.println("active games: " + Server.activeGames.get(0));
             System.out.println("active games: " + Server.activeGames.get(0));
-            notifyGameMembers(teamName1, teamName2, "A game has started between " + teamName1 + " and " + teamName2 + "." +"\n wait for your turn");
+            notifyGameMembers(teamName1, teamName2, "A game has started between " + teamName1 + " and " + teamName2 + "." +"\n wait for your turn", newGame);
             String playerName = getCurrentPlayer(newGame);
             notifyPlayerTurn(playerName);
             return "OK";
         }
     }
-    private void notifyGameMembers(String teamName1, String teamName2 , String message) {
-        for (Map.Entry<Socket, String> entry : clients.entrySet()) {
-            if (entry.getValue().equals(teamName1) || entry.getValue().equals(teamName2)) {
-                Socket receiverSocket = entry.getKey();
-                try {
-                    PrintWriter out = new PrintWriter(receiverSocket.getOutputStream(), true);
-                    out.println(message);
+    private void notifyGameMembers(String teamName1, String teamName2 , String message, Game game) {
+        for (Team team : game.getTeams()) {
+            if (team.getName().equals(teamName1) || team.getName().equals(teamName2)) {
+                for (User player : team.getPlayers()) {
 
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    notifyPlayerWithAResult( player.getUsername(), message);
                 }
             }
         }
@@ -643,7 +641,7 @@ public class ClientThread extends Thread {
         if (game != null) {
             if (game.guessCharacter(guessedChar)) {
                 if (game.isGameOver()) {
-                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Game over. " );
+                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Game over. " , game);
                     Team WonTeam = game.checkWonTeam();
                     Score score = WonTeam.getPlayers().get(0).getScore();
                     score.multiGameScoreWins++;
@@ -685,19 +683,57 @@ public class ClientThread extends Thread {
                     notifyPlayerWithAResult(opponentTeam.getPlayers().get(1).getUsername(), "You team lost the game. With team score of " + opponentTeam.getScore());
                     return "WON:" + game.getMaskedPhrase();
                 } else {
-                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Correct guess by team: " + team.getName() + " \nThe word now is: " + game.getMaskedPhrase());
+                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Correct char by team: " + team.getName() + " \nThe word now is: " + game.getMaskedPhrase() , game);
                     String nextPlayer = nextTurn(game);
-                    notifyTeamMembers(team, "Your team score is: " + team.getScore() );
+                    notifyTeamMembers(team, "Your team score is: " + team.getScore() + "remaining attempts" + team.getMaxAttempts());
                     notifyPlayerTurn(nextPlayer);
                     return "CORRECT:" + game.getMaskedPhrase();
 
                 }
             } else {
-                notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Wrong guess by team: " + team.getName() + " \nThe word now is: " + game.getMaskedPhrase());
-                String nextPlayer = nextTurn(game);
-                notifyPlayerTurn(nextPlayer);
-                return "WRONG:" + game.getMaskedPhrase();
-            }
+                if (game.isGameOver()) {
+                    notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Game over. " , game);
+                    Team WonTeam = game.checkWonTeam();
+                    Score score = WonTeam.getPlayers().get(0).getScore();
+                    score.multiGameScoreWins++;
+                    WonTeam.getPlayers().get(0).setScore(score);
+                    Model.updateScore(score);
+                    Score score1 = WonTeam.getPlayers().get(1).getScore();
+                    score1.multiGameScoreWins++;
+                    WonTeam.getPlayers().get(1).setScore(score1);
+                    Model.updateScore(score1);
+                    Score score2 = getOpponentTeam(team, game).getPlayers().get(0).getScore();
+                    score2.multiGameScoreLosses++;
+                    getOpponentTeam(team, game).getPlayers().get(0).setScore(score2);
+                    Model.updateScore(score2);
+                    Score score3 = getOpponentTeam(team, game).getPlayers().get(1).getScore();
+                    score3.multiGameScoreLosses++;
+                    getOpponentTeam(team, game).getPlayers().get(1).setScore(score3);
+                    Model.updateScore(score3);
+
+                    if (WonTeam == null) {
+                        for (Team t : game.getTeams()) {
+                            for (User player : t.getPlayers()) {
+                                Score score4 = player.getScore();
+                                score4.multiGameScoreDraws++;
+                                player.setScore(score4);
+                                Model.updateScore(score4);
+                            }
+                        }
+                        notifyPlayerWithAResult(team.getPlayers().get(0).getUsername(), "It's a draw:" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(team.getPlayers().get(1).getUsername(), "It's a draw:" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(getOpponentTeam(team, game).getPlayers().get(0).getUsername(), "It's a draw" + game.getMaskedPhrase());
+                        notifyPlayerWithAResult(getOpponentTeam(team, game).getPlayers().get(1).getUsername(), "It's a draw" + game.getMaskedPhrase());
+                        return "DRAW:" + game.getMaskedPhrase();
+                    }
+                }
+                    else {
+                        notifyGameMembers(team.getName(), getOpponentTeam(team, game).getName(), "Wrong char by team: " + team.getName() + " \nThe word now is: " + game.getMaskedPhrase() , game);
+                        String nextPlayer = nextTurn(game);
+                        notifyPlayerTurn(nextPlayer);
+                        return "WRONG:" + game.getMaskedPhrase();
+                    }
+                }
         }
         return "ERROR: Game not found.";
 
@@ -747,12 +783,7 @@ public class ClientThread extends Thread {
                     return "OK";
                 }
             }
-//            team.addPlayer(u);
-//            System.out.println(team.getPlayers().get(0).getName());
-//            System.out.println("player"+u.getName()+ "added to team: " + teamName);
-//            System.out.println("team players: " + team.playersToString());
-//            teams.add(team);
-//            return "OK";
+
         }
         catch (Exception e) {
             System.out.println("team not created from Client thread: " + teamName);
@@ -774,6 +805,7 @@ public class ClientThread extends Thread {
                                 return "NOT_OK_DUPLICATE";
                             }
                         }
+                        u.setMaxAttempts(Integer.parseInt(Server.getConfigData()[0]));
                         team.addPlayer(u);
                         return "OK";
                     }
@@ -812,7 +844,7 @@ public class ClientThread extends Thread {
                     score.singleGameScoreWins++;
                     game.user.setScore(score);
                     Model.updateScore(game.user.getScore());
-                    return "WON" + " " + game.getMaskedPhrase();
+                    return "WON" + " " + "masked word is " + game.getMaskedPhrase();
                 }
                 else
                 {
@@ -821,11 +853,11 @@ public class ClientThread extends Thread {
                     score.singleGameScoreLosses++;
                     game.user.setScore(score);
                     Model.updateScore(game.user.getScore());
-                    return "LOST" + " " + game.getMaskedPhrase();
+                    return "LOST" + " " +"masked word is " + game.getPhrase();
                 }
             } else {
 
-                return "CORRECT" + " " + game.getMaskedPhrase();
+                return "CORRECT" + " " + game.getMaskedPhrase() + " " + game.getRemainingAttempts();
             }
 
         }
@@ -835,9 +867,9 @@ public class ClientThread extends Thread {
                 score.singleGameScoreLosses++;
                 game.user.setScore(score);
                 Model.updateScore(game.user.getScore());
-                return "LOST" + " " + game.getMaskedPhrase();
+                return "LOST" + " " +"masked word is " + game.getPhrase() + " " + game.getRemainingAttempts();
             }
-            return "WRONG" + " " + game.getMaskedPhrase();
+            return "WRONG" + " " + game.getMaskedPhrase() + " " + game.getRemainingAttempts();
         }
     }
 
@@ -851,8 +883,7 @@ public class ClientThread extends Thread {
             }
         }
         game = new SinglePlayerGame(word,Server.configData[0],user);
-
-        return "OK";
+        return "Starting single player game... masked word is " + game.getMaskedPhrase();
 
     }
     public static User getUser(String username) {
@@ -889,8 +920,6 @@ public class ClientThread extends Thread {
         return flag;
     }
     private String login (String username ,String pass) throws IOException {
-
-
         User u = getUser(username);
         if (u!=null) {
             if(!existsInOnlineUsers(username)){
@@ -898,6 +927,8 @@ public class ClientThread extends Thread {
                     thisuser = u;
                     this.username = username;
                     Server.onlineUsers.add(this);
+                    Server.users.add(u);
+                    game.user = u;
                     for (Score score : Server.scores){
                         System.out.println( "score for user "+score.getUsername() + " is " + score.GameRoomLosses);
                         if (score.getUsername().equals(username)){
@@ -931,6 +962,15 @@ public class ClientThread extends Thread {
 
         }
         String receiverTeam = team1Vsteam2.get(senderTeam);
+        if (Server.gameRooms!=null){
+        Team team = findTeamByUsername(name);
+        Game game = findGameByUsername(name);
+        Server.gameRooms.remove(game);
+        if (team!=null){
+            team.getPlayers().remove(thisuser);
+        }
+        }
+
         for (Map.Entry<Socket, String> entry : clients.entrySet()) {
             if (entry.getValue().equals(senderTeam)) {
                 Socket receiverSocket = entry.getKey();

@@ -31,11 +31,6 @@ public class ListenerThread extends Thread{
                     response = input.split(":")[1];
                     UIController.validateLoginFromServer(response);
                 }
-//                else if(input.startsWith("/LIST")) {
-//                    String usernames = input.substring(6);
-//                    Client.onlineLista = Client.parseList(usernames);
-////                    UIController.updateTable();
-//                }
                 else if (input.startsWith("/CREATE_TEAM")) {
                     response = input.split(":")[1];
                     System.out.println("Server: team creation " + response);
@@ -44,9 +39,8 @@ public class ListenerThread extends Thread{
                     response = input.split(":")[1];
                     UIController.handleJoinTeamResponse(response);
                 }
-                else if(input.startsWith("/START_SINGLE_PLAYER_GAME:")){
-                    response = input.split(":")[1];
-                    UIController.handleStartSinglePlayerGameResponse(response);
+                else if(input.startsWith("Starting single")){
+                    UIController.handleStartSinglePlayerGameResponse(input);
                 } else if (input.startsWith("GUESS")) {
                     response = input.split(" ")[1];
                     String maskedWord = input.split(" ")[2];
@@ -83,10 +77,6 @@ public class ListenerThread extends Thread{
                     response = input.split(":")[1];
                     UIController.handleYourTurnResponse(response);
                 }
-//                else if (input.startsWith("/MASKED_WORD")) {
-//                    response = input.split(":")[1];
-//                    UIController.handleMaskedWordResponse(response);
-//                }
                 else if(input.startsWith("/QUIT_SENT")){
                     String name=input.split(":")[1];
                     UIController.receiveQuitTheGameSignal(name);

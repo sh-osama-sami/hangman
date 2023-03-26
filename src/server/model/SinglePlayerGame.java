@@ -7,6 +7,19 @@ package server.model;
         static  public int id = 0;
         private String phrase;
         private String maskedPhrase;
+
+        public String getPhrase() {
+            return phrase;
+        }
+
+        public void setMaskedPhrase(String maskedPhrase) {
+            this.maskedPhrase = maskedPhrase;
+        }
+
+        public void setRemainingAttempts(int remainingAttempts) {
+            this.remainingAttempts = remainingAttempts;
+        }
+
         private int maxAttempts;
         private int remainingAttempts;
 

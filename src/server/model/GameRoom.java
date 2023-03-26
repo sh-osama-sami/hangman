@@ -1,5 +1,7 @@
 package server.model;
 
+import server.Server;
+
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,7 @@ public class GameRoom {
     private String phrase;
     private String maskedPhrase;
 
+    private int maxAttempts;
     public void setUsers(ArrayList<User> users) {
         this.users = users;
     }
@@ -47,7 +50,7 @@ public class GameRoom {
     }
 
     private int currentPlayerIndex;
-    private int maxAttempts;
+
 
     public GameRoom( int gameRoomSize, int maxAttempts) {
         this.gameRoomSize = gameRoomSize;
@@ -155,8 +158,9 @@ public class GameRoom {
     }
 
     public void addPlayerToGameRoom(User user) {
+        int attempts= user.getMaxAttempts();
+        user.setMaxAttempts(Integer.parseInt(Server.getConfigData()[0]));
         users.add(user);
-
 
     }
 

@@ -68,17 +68,7 @@ public class Client {
         System.out.println("/LOGIN:"+username+":"+pass);
         serverOutput.println("/LOGIN:"+username+":"+pass);
     }
-//    public static synchronized LinkedList<String> parseList(String usernames) {
-//        LinkedList<String> list = new LinkedList<>();
-//        String[] userarray = usernames.split(";");
-//        for (int i = 0; i < userarray.length; i++) {
-//            if(userarray[i].equals(getUsername())) {
-//                continue;
-//            }
-//            list.add(userarray[i]);
-//        }
-//        return list;
-//    }
+
 
     public static void sendCreateTeamRequest(String teamName , String teamSize) {
         serverOutput.println("/CREATE_TEAM:"+teamName + ":" + getUsername() + ":" + teamSize );
@@ -89,12 +79,13 @@ public class Client {
         serverOutput.println("/JOIN_TEAM:"+teamName + ":" + getUsername());
     }
     public static void sendExitSignal() {
-        System.exit(0);
         serverOutput.println("/EXIT");
+        System.exit(0);
     }
     public static void sendQuitTheGameSignal( ){
-        System.exit(0);
         serverOutput.println("/QUIT:"+playerUsername);
+        System.exit(0);
+
     }
 
     public static void sendStartSinglePlayerGameRequest() {
