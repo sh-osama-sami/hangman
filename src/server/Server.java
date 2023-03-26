@@ -22,6 +22,7 @@ public class Server {
     public static ArrayList<Team> teams = new ArrayList<Team>();
     public static ArrayList<GameRoom> activeGameRooms = new ArrayList<GameRoom>();
     public static ArrayList<User> users = new ArrayList<User>();
+    static ArrayList<Team> teamReady = new ArrayList<>();
     static ArrayList<GameRoom> gameRooms = new ArrayList<>();
 
     static PrintWriter serveroutput =null;

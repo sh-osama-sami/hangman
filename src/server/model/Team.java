@@ -17,8 +17,18 @@ public class Team {
     private int losses;
     private int draws;
 
-    public Team(String name) {
-//        players=new User[Game.maxNumberOfPlayersInTeam];
+    private int teamSize;
+
+    public int getTeamSize() {
+        return teamSize;
+    }
+
+    public void setTeamSize(int teamSize) {
+        this.teamSize = teamSize;
+    }
+
+    public Team(String name, int teamSize) {
+        this.teamSize = teamSize;
         this.name = name;
         Team.id = id+1;
         this.score = 0;
@@ -102,10 +112,10 @@ public class Team {
     }
 
     public boolean isTeamReady() {
-        if (onlinePlayers.size() ==  players.size()) {
+        if (getNumberOfPlayers() == teamSize)
             isTeamReady = true;
-
-        }
+        else
+            isTeamReady = false;
         return isTeamReady;
     }
 

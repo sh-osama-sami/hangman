@@ -110,19 +110,6 @@ public class UIController extends Thread {
         }
     }
 
-//    public static void handleMaskedWordResponse(String response) {
-//        System.out.println("response from masked word: " + response);
-//        if(response.startsWith("WON"))
-//        {
-//            System.out.println("You won!");
-//            showGameOptions();
-//        }
-//        if (response.startsWith("LOST")) {
-//            System.out.println("You lost!");
-//            showGameOptions();
-//        }
-//        System.out.println("Masked word notification: " + response);
-//    }
 
     public static void handleNotifyPlayer(String response) {
         if (response.contains("won")){
@@ -134,7 +121,7 @@ public class UIController extends Thread {
         if (response.contains("draw")) {
             showGameOptions();
         }
-        if (response.contains("guess") || response.contains("turn")) {
+        if (response.contains("guess")) {
             guessCharacterGameRoomMenu();
         }
         if (response.contains("game mode")) {
@@ -306,7 +293,15 @@ public class UIController extends Thread {
         System.out.println("Enter team name:");
         String teamName = sc.nextLine();
         teamNameToValidate = teamName;
-        Client.sendCreateTeamRequest(teamName);
+        System.out.println("Enter team size between: " + minTeamSize + " - " + maxTeamSize);
+        String teamSize = sc.nextLine();
+        if (Integer.parseInt(teamSize) >= minTeamSize && Integer.parseInt(teamSize) <= maxTeamSize) {
+            Client.sendCreateTeamRequest(teamName, teamSize);
+        }
+        else {
+            System.out.println("Invalid choice. Please enter a number between " + minTeamSize + " - " + maxTeamSize );
+
+        }
     }
 
     private static void joinTeam(Scanner sc) {

@@ -80,8 +80,8 @@ public class Client {
         return list;
     }
 
-    public static void sendCreateTeamRequest(String teamName) {
-        serverOutput.println("/CREATE_TEAM:"+teamName + ":" + getUsername());
+    public static void sendCreateTeamRequest(String teamName , String teamSize) {
+        serverOutput.println("/CREATE_TEAM:"+teamName + ":" + getUsername() + ":" + teamSize );
 
     }
 

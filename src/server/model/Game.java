@@ -21,10 +21,10 @@ public class Game {
         initializePlayerAndTeamIndices();
     }
 
-    public Game(int maxAttempts, ArrayList<Team> teams) {
+    public Game(String maxAttempts, ArrayList<Team> teams) {
         this.teams = teams;
         for (Team team : teams) {
-            team.setMaxAttempts(maxAttempts);
+            team.setMaxAttempts(Integer.parseInt(maxAttempts));
         }
         initializePlayerAndTeamIndices();
     }

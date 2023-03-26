@@ -39,7 +39,7 @@ public class ClientThread extends Thread {
     static  HashMap<String, String> team1Vsteam2 = new HashMap<>();
     static HashMap<Socket, String> socketUsernameMap = new HashMap<>();
 
-    static ArrayList<String> teamNamesReady = new ArrayList<>();
+
 
     @Override
     public void run() {
@@ -133,7 +133,8 @@ public class ClientThread extends Thread {
                 if (input.startsWith("/CREATE_TEAM")) {
                     String teamName = input.split(":")[1];
                     String username = input.split(":")[2];
-                    String response = createTeam(teamName,username);
+                    int teamSize = Integer.parseInt(input.split(":")[3]);
+                    String response = createTeam(teamName,username,teamSize);
                     clientOutput.println("/CREATE_TEAM:" + response);
                     if (response.equals("OK")) {
                         this.teamname = teamName;
@@ -197,6 +198,7 @@ public class ClientThread extends Thread {
                    // clientOutput.println("/CHECK_FOR_TEAM_STATE:" + response);
                     if (response.equals("OK")) {
                         System.out.println( "A team is ready.");
+
                         joinGame(team , word);
                     }
                 }
@@ -431,19 +433,27 @@ public class ClientThread extends Thread {
     }
 
     private String joinGame(String team , String word ) {
-        System.out.println("join game from server joinGame" + team);
-        System.out.println("teamNamesReady size: " + teamNamesReady.size());
-        if (teamNamesReady.size()>0)
+        System.out.println("teamNamesReady size: " + Server.teamReady.size());
+        Team currentTeam = null;
+        for(Team t : Server.teamReady)
         {
-            String team2 = teamNamesReady.get(0);
-            team1Vsteam2.put(team,team2);
-            teamNamesReady.remove(0);
-            return startMultiplayerGame(team, team2,word);
+            if(t.getName().equals(team))
+                currentTeam = t;
         }
-        else {
-            teamNamesReady.add(team);
-            return "WAIT";
+        for (Team t : Server.teamReady) {
+            if (t.getTeamSize() == currentTeam.getTeamSize() && !t.getName().equals(team)){
+                team1Vsteam2.put(team,t.getName());
+                System.out.println("in making a game");
+                Server.teamReady.remove(t);
+                Server.teamReady.remove(currentTeam);
+                return startMultiplayerGame(team, t.getName(),word);
+            }
+            else {
+                Server.teamReady.add(currentTeam);
+                return "WAIT";
+            }
         }
+        return "WAIT";
     }
 
 
@@ -466,7 +476,7 @@ public class ClientThread extends Thread {
                 }
             }
 
-            Game newGame = new Game(3, teamList);
+            Game newGame = new Game(Server.configData[0], teamList);
             newGame.setPhrase(word);
             Server.activeGames.add(newGame);
             System.out.println("Game started between " + teamName1 + " and " + teamName2 + ".");
@@ -686,9 +696,9 @@ public class ClientThread extends Thread {
     }
 
 
-    private String createTeam(String teamName , String userName) throws IOException {
+    private String createTeam(String teamName , String userName , int teamSize) throws IOException {
         try {
-            Team team = new Team(teamName);
+            Team team = new Team(teamName, teamSize);
             System.out.println("team created from Client thread: " + teamName);
             for(User u : Server.users)
             {
@@ -741,10 +751,13 @@ public class ClientThread extends Thread {
     public static String checkForTeamReady2(String teamName){
         for (Team team : teams) {
             if (team.getName().equals(teamName)) {
-               int teamSize = team.getPlayers().size();
-                if (teamSize >= 2) {
+               int currentTeamSize = team.getPlayers().size();
+                if (currentTeamSize == team.getTeamSize()) {
+                    System.out.println("inside check for team ready");
+                    Server.teamReady.add(team);
                     return "OK";
                 }
+                else return "NOT_OK";
             }
         }
 
