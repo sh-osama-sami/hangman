@@ -2,9 +2,7 @@ package client.ui;
 
 import client.Client;
 
-import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class UIController extends Thread {
     static String usernameToValidate = "";
@@ -71,28 +69,20 @@ public class UIController extends Thread {
         }
     }
 
-    public static void handleGuessResponse(String response, String maskedWord , int numberOfGuesses) {
-        if (response.equals("CORRECT")) {
-            System.out.println("Correct guess!");
-            System.out.println("Masked word guess response: " + maskedWord);
-            if (maskedWord.contains("_")) {
-                guessCharacterMenu();
-            } else {
-                System.out.println("You won!");
+    public static void handleGuessResponse(String response, String maskedWord) {
+        if (response.contains("WON")) {
                 showGameOptions();
-            }
         }
-         else if (response.equals("WRONG")) {
-            System.out.println("Wrong guess!");
-            System.out.println("Masked word guess response:" + maskedWord);
-            if (numberOfGuesses > 0) {
-                guessCharacterMenu();
-            } else {
-                System.out.println("You lost!");
+        else if (response.contains("LOST")) {
                 showGameOptions();
-            }
+        }
+        else{
+            guessCharacterMenu();
+        }
 
-    }
+
+
+
     }
 
 

@@ -68,17 +68,17 @@ public class Client {
         System.out.println("/LOGIN:"+username+":"+pass);
         serverOutput.println("/LOGIN:"+username+":"+pass);
     }
-    public static synchronized LinkedList<String> parseList(String usernames) {
-        LinkedList<String> list = new LinkedList<>();
-        String[] userarray = usernames.split(";");
-        for (int i = 0; i < userarray.length; i++) {
-            if(userarray[i].equals(getUsername())) {
-                continue;
-            }
-            list.add(userarray[i]);
-        }
-        return list;
-    }
+//    public static synchronized LinkedList<String> parseList(String usernames) {
+//        LinkedList<String> list = new LinkedList<>();
+//        String[] userarray = usernames.split(";");
+//        for (int i = 0; i < userarray.length; i++) {
+//            if(userarray[i].equals(getUsername())) {
+//                continue;
+//            }
+//            list.add(userarray[i]);
+//        }
+//        return list;
+//    }
 
     public static void sendCreateTeamRequest(String teamName , String teamSize) {
         serverOutput.println("/CREATE_TEAM:"+teamName + ":" + getUsername() + ":" + teamSize );
@@ -99,7 +99,7 @@ public class Client {
 
     public static void sendStartSinglePlayerGameRequest() {
         System.out.println("from client");
-        serverOutput.println("/START_SINGLE_PLAYER_GAME" );
+        serverOutput.println("/START_SINGLE_PLAYER_GAME"+ ":" + getUsername());
     }
 
     public static void sendGuessToServer(String guess) {

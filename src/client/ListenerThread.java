@@ -30,11 +30,12 @@ public class ListenerThread extends Thread{
                 } else if (input.startsWith("/LOGIN")) {
                     response = input.split(":")[1];
                     UIController.validateLoginFromServer(response);
-                } else if(input.startsWith("/LIST")) {
-                    String usernames = input.substring(6);
-                    Client.onlineLista = Client.parseList(usernames);
-//                    UIController.updateTable();
                 }
+//                else if(input.startsWith("/LIST")) {
+//                    String usernames = input.substring(6);
+//                    Client.onlineLista = Client.parseList(usernames);
+////                    UIController.updateTable();
+//                }
                 else if (input.startsWith("/CREATE_TEAM")) {
                     response = input.split(":")[1];
                     System.out.println("Server: team creation " + response);
@@ -46,12 +47,10 @@ public class ListenerThread extends Thread{
                 else if(input.startsWith("/START_SINGLE_PLAYER_GAME:")){
                     response = input.split(":")[1];
                     UIController.handleStartSinglePlayerGameResponse(response);
-                } else if (input.startsWith("/GUESS:")) {
-                    response = input.split(":")[1];
-                    String maskedWord = input.split(":")[2];
-                    int noOfGuesses = Integer.parseInt(input.split(":")[3]);
-                    System.out.println("Server: guess " + response);
-                    UIController.handleGuessResponse(response,maskedWord, noOfGuesses);
+                } else if (input.startsWith("GUESS")) {
+                    response = input.split(" ")[1];
+                    String maskedWord = input.split(" ")[2];
+                    UIController.handleGuessResponse(response, maskedWord);
 
                 }
                 else if (input.startsWith("/CHECK_FOR_TEAM:"))

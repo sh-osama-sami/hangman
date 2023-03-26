@@ -2,18 +2,20 @@ package server.model;
 
 
 
-    public class SinglePlayerGame {
+    public class SinglePlayerGame
+    {   static public User user;
         static  public int id = 0;
         private String phrase;
         private String maskedPhrase;
         private int maxAttempts;
         private int remainingAttempts;
 
-        public SinglePlayerGame( String phrase, int maxAttempts) {
+        public SinglePlayerGame(String phrase, String maxAttempts,User user) {
+            this.user = user;
             SinglePlayerGame.id = id+1;
             setPhrase(phrase);
-            this.maxAttempts = maxAttempts;
-            this.remainingAttempts = maxAttempts;
+            this.maxAttempts = Integer.parseInt(maxAttempts);
+            this.remainingAttempts = Integer.parseInt(maxAttempts);
         }
 
         public void setPhrase(String phrase) {
@@ -21,7 +23,15 @@ package server.model;
             this.maskedPhrase = phrase.replaceAll("[A-Za-z]", "_");
         }
 
-        public String guessCharacter(char guessedChar) {
+        public static User getUser() {
+            return user;
+        }
+
+        public static void setUser(User user) {
+            SinglePlayerGame.user = user;
+        }
+
+        public boolean guessCharacter(char guessedChar) {
             guessedChar = Character.toUpperCase(guessedChar);
             boolean found = false;
             StringBuilder updatedMaskedPhrase = new StringBuilder(maskedPhrase);
@@ -34,12 +44,14 @@ package server.model;
             maskedPhrase = updatedMaskedPhrase.toString();
             if (!found) {
                 remainingAttempts--;
-                return "WRONG";
+                return false;
             }
-            return "CORRECT";
+            return true;
         }
 
         public boolean isGameOver() {
+            System.out.println("maskedPhrase: " + maskedPhrase);
+            System.out.println("remainingAttempts: " + remainingAttempts);
             return !maskedPhrase.contains("_") || remainingAttempts == 0;
         }
 

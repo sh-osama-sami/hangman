@@ -132,7 +132,7 @@ public class Model {
         }
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(SCORE, true));
-            writer.write( score.getUsername() +  "," + score.singleGameScoreWins +"," + score.singleGameScoreLosses +"," + score.singleGameScoreDraws
+            writer.write( score.getUsername() +  "," + score.singleGameScoreWins +"," + score.singleGameScoreLosses
                     + "," + score.multiGameScoreWins + "," + score.multiGameScoreLosses + "," + score.multiGameScoreDraws
                     + "," + score.GameRoomWins + "," + score.GameRoomLosses + "," + score.GameRoomDraws
                     + "\n");
@@ -192,7 +192,7 @@ public class Model {
             String[] socreData = line.split(",");
             Score score = new Score(socreData[0], Integer.parseInt(socreData[1]), Integer.parseInt(socreData[2]), Integer.parseInt(socreData[3]),
                     Integer.parseInt(socreData[4]), Integer.parseInt(socreData[5]), Integer.parseInt(socreData[6]),
-                    Integer.parseInt(socreData[7]), Integer.parseInt(socreData[8]), Integer.parseInt(socreData[9]));
+                    Integer.parseInt(socreData[7]), Integer.parseInt(socreData[8]));
             scores.add(score);
         }
 
@@ -222,7 +222,7 @@ public class Model {
             if (socreData[0].equals(username)) {
                 Score score = new Score(socreData[0], Integer.parseInt(socreData[1]), Integer.parseInt(socreData[2]), Integer.parseInt(socreData[3]),
                         Integer.parseInt(socreData[4]), Integer.parseInt(socreData[5]), Integer.parseInt(socreData[6]),
-                        Integer.parseInt(socreData[7]), Integer.parseInt(socreData[8]), Integer.parseInt(socreData[9]));
+                        Integer.parseInt(socreData[7]), Integer.parseInt(socreData[8]));
                 reader.close();
                 return score;
             }
