@@ -22,12 +22,14 @@ public class lookupListener {
             if (lookupserverinput.startsWith("/RANDOM_WORD")) {
                  word = lookupserverinput.split(":")[1];
                 System.out.println("random word from server: " + word);
-                return "GOOD";
+                return word;
 //                    clientOutput.println("RANDOM_WORD:" + word);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        } return word;
+            System.out.println("Error :( : " + e);
+        }
+
+        return word;
     }
 
 

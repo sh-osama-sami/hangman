@@ -13,7 +13,31 @@ public class Model {
     private static final String PHRASES = "lookup.txt";
 
 
+    public static ArrayList<User> loadUsersFromFile() {
+        ArrayList<User> users = new ArrayList<>();
 
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(USERS));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                int id = Integer.parseInt(parts[0]);
+                String name = parts[1];
+                String email = parts[2];
+                String password = parts[3];
+
+                User user = new User( name, email, password);
+                users.add(user);
+            }
+
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return users;
+    }
     public static void saveUser(User user) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(USERS, true));

@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     public static LinkedList<ClientThread> onlineUsers = new LinkedList<ClientThread>();
-
+  //  public static ArrayList<User> onlineUsers = new ArrayList<User>();
     public static ArrayList<Game> activeGames = new ArrayList<Game>();
     public static ArrayList<Team> teams = new ArrayList<Team>();
     public static ArrayList<GameRoom> activeGameRooms = new ArrayList<GameRoom>();
@@ -77,6 +77,7 @@ public class Server {
         int portNumber = 6666;
         int port = 8888;
         try {
+            users =  Model.loadUsersFromFile();
             configData = Model.loadGameConfigFromFile();
             scores = Model.loadAllScoresFromFileToServer();
             ServerSocket server = new ServerSocket(portNumber);
@@ -85,6 +86,7 @@ public class Server {
                 port = Integer.parseInt(args[0]);
 
             Socket server2Socket = new Socket("localhost", port);
+
             //Listening for incoming connections
             while(true) {
                 serveroutput = new PrintWriter(server2Socket.getOutputStream(), true);
@@ -107,7 +109,7 @@ public class Server {
             }
 
         } catch (IOException e) {
-            System.out.println("Error on server: " + e);
+            System.out.println("Lookup server is down");
         }
     }
 

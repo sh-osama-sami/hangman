@@ -342,7 +342,13 @@ public class UIController extends Thread {
             System.out.println("401 Wrong password");
             signupOrLogin();
 
-        } else {
+        } else if (msg.equals("LOGGED_IN")) {
+            System.out.println("You are already logged in");
+            signupOrLogin();
+
+        }
+
+         else {
             System.out.println("Logged in successfully");
             Client.setUsername(usernameToValidate);
             showGameOptions();
